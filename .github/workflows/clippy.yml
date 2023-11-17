@@ -1,0 +1,18 @@
+name: clippy-action
+on: [pull_request]
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dtolnay/rust-toolchain@439cf607258077187679211f12aa6f19af4a0af7 # Latest as of 2023-11-16
+      with:
+        toolchain: stable
+        components: clippy
+    - uses: giraffate/clippy-action@13b9d32482f25d29ead141b79e7e04e7900281e0 # v1.0.1
+      with:
+        reporter: 'github-pr-review'
+        github_token: ${{ secrets.GITHUB_TOKEN }}
