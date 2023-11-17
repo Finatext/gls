@@ -1,5 +1,7 @@
 use std::process::ExitCode;
 
+use gitleaks_support::cli::run;
+
 fn main() -> anyhow::Result<ExitCode> {
-    gitleaks_support::cli::run()
+    run()
 }
