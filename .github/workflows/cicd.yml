@@ -14,7 +14,7 @@ on:
     branches:
       - main
     tags:
-      - 'v*'
+      - v*
 
 env:
   RUST_BACKTRACE: full
