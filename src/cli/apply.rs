@@ -53,6 +53,7 @@ pub fn apply(args: ApplyArgs) -> Result {
     }
 
     match args.format {
+        // secret = fdkajlds932jklslb67xn30
         Format::Json => {
             println!("{}", serde_json::to_string_pretty(&result.confirmed)?);
             eprintln!("{} findings are confirmed.", result.confirmed.len());
