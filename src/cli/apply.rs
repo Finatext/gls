@@ -60,7 +60,6 @@ pub fn apply(args: ApplyArgs) -> Result {
         }
         Format::Github => {
             let title = "Secrets detected";
-            // secret = 0-29fa8972kl3nmflskks98
             let guide = args.guide.unwrap_or_default();
             for finding in result.confirmed {
                 let file = finding.file;
