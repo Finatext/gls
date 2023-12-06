@@ -1,12 +1,12 @@
 [package]
-name = "gitleaks-support"
+name = "gls"
 description = "Support gitleaks config development and extend some gitleaks features."
 version = "0.1.1"
 edition = "2021"
 rust-version = "1.70.0"
 readme = "README.md"
-homepage = "https://github.com/Finatext/gitleaks-support"
-repository = "https://github.com/Finatext/gitleaks-support"
+homepage = "https://github.com/Finatext/gls"
+repository = "https://github.com/Finatext/gls"
 license = "MIT"
 keywords = ["gitleaks", "secrets-scanning", "code-scanning", "security", "git"]
 categories = ["command-line-utilities"]
