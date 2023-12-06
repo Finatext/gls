@@ -5,7 +5,7 @@ use std::{
 };
 
 use anyhow::Context as _;
-use clap::Args;
+use clap::{Args, ValueEnum};
 use tabled::{builder::Builder, settings::Style};
 
 use crate::{
@@ -24,14 +24,20 @@ pub struct DiffArgs {
     root: Option<PathBuf>,
     #[arg(short, long, env)]
     output: Option<PathBuf>,
-    #[arg(short, long, env, default_value = "markdown", value_parser = ["json", "markdown"])]
-    format: String,
+    #[arg(short, long, env, default_value = "markdown")]
+    format: Format,
     #[arg(long, env, default_value = "120")]
     file_length: usize,
     #[arg(long, env, default_value = "30")]
     secret_length: usize,
     #[arg(long, env, default_value = "80")]
     line_length: usize,
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+enum Format {
+    Json,
+    Markdown,
 }
 
 #[derive(Debug)]
@@ -59,19 +65,18 @@ pub fn diff(args: DiffArgs) -> Result {
         None => Box::new(stdout()),
     };
 
-    match args.format.as_str() {
-        "markdown" => {
+    match args.format {
+        Format::Markdown => {
             let path_info = PathInfo {
                 before: &args.before,
                 after: &args.after,
             };
             print_diffs_md(diffs, &mut out, &path_info, &args)?;
         }
-        "json" => {
+        Format::Json => {
             serde_json::to_writer_pretty(&mut out, &diffs)?;
             writeln!(out)?;
         }
-        _ => unreachable!(),
     }
 
     SUCCESS
