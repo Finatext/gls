@@ -34,4 +34,4 @@ jobs:
           set -x
           mkdir -p tmp
           gitleaks detect --verbose --exit-code=0 --no-banner --config=dev/gitleaks.toml --report-path="${REPORT_PATH}"
-          cargo run apply --config-path=dev/gitleaks-allowlist.toml --report-path="${REPORT_PATH}"
+          cargo run apply --no-fail --format=github --config-path=dev/gitleaks-allowlist.toml --report-path="${REPORT_PATH}"
