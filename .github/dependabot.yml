@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "12:00"
+      timezone: "Asia/Tokyo"
+    groups:
+      - major:
+          update-types:
+            - "major"
+      - minor:
+          update-types:
+            - "minor"
+      - patch:
+          update-types:
+            - "patch"
+  - package-echosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "12:00"
+      timezone: "Asia/Tokyo"
+    groups:
+      all:
+        patterns:
+          - "*"
+
