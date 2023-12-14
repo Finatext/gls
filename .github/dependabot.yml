@@ -6,16 +6,11 @@ updates:
       interval: "daily"
       time: "12:00"
       timezone: "Asia/Tokyo"
+    # To avoid lock file conflicts, group all updates together.
     groups:
-      major:
-        update-types:
-          - "major"
-      minor:
-        update-types:
-          - "minor"
-      patch:
-        update-types:
-          - "patch"
+      cargo-all:
+        patterns:
+          - "*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -25,7 +20,7 @@ updates:
       time: "12:00"
       timezone: "Asia/Tokyo"
     groups:
-      all:
+      github-actions-all:
         patterns:
           - "*"
 
