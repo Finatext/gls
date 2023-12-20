@@ -98,7 +98,7 @@ fn print_summary(results: &[FilterResult], filter: &FindingFilter) {
 
 fn print_overview_summary(results: &[FilterResult], filter: &FindingFilter) {
     let mut builder = Builder::default();
-    builder.set_header(["item", "count"]);
+    builder.push_record(["item", "count"]);
     builder.push_record([s("target repositories"), results.len().to_string()]);
     builder.push_record([
         s("enabled allowlists"),
