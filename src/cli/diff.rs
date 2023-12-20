@@ -134,13 +134,13 @@ fn print_diffs_md(
         }
     }
 
-    if allowed_builder.count_rows() == 1 && confirmed_builder.count_rows() == 1 {
+    if allowed_builder.count_records() == 1 && confirmed_builder.count_records() == 1 {
         eprintln!("No diffs found.");
     } else {
-        if allowed_builder.count_rows() > 1 {
+        if allowed_builder.count_records() > 1 {
             write_table(out, allowed_builder, path_info, "Allowed diffs")?;
         }
-        if confirmed_builder.count_rows() > 1 {
+        if confirmed_builder.count_records() > 1 {
             write_table(out, confirmed_builder, path_info, "Confirmed diffs")?;
         }
     }
