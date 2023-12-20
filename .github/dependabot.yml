@@ -3,7 +3,9 @@ updates:
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      # Avoid default day of week because of potential rush.
+      day: "tuesday"
       time: "12:00"
       timezone: "Asia/Tokyo"
     # To avoid lock file conflicts, group all updates together.
