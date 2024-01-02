@@ -90,7 +90,7 @@ jobs:
       with:
         toolchain: stable
         targets: ${{ matrix.job.target }}
-    - uses: taiki-e/install-action@b59252d3011a820248187cab9d45aecbbf97e3b8 # v2.23.2
+    - uses: taiki-e/install-action@56ab7930c591507f833cbaed864d201386d518a8 # v2.23.7
       if: matrix.job.cross == true
       with:
         tool: cross
