@@ -1,4 +1,8 @@
-use std::path::PathBuf;
+use std::{
+    fs::File,
+    io::{stdout, Write},
+    path::PathBuf,
+};
 
 use anyhow::bail;
 use clap::{Args, ValueEnum};
@@ -20,6 +24,8 @@ pub struct ApplyArgs {
     root: Option<PathBuf>,
     #[arg(short, long, env, default_value = "github")]
     format: Format,
+    #[arg(short, long, env)]
+    output: Option<PathBuf>,
     /// Add extra guide message to GitHub format output.
     #[arg(short, long, env)]
     guide: Option<String>,
@@ -45,17 +51,21 @@ pub fn apply(args: ApplyArgs) -> Result {
         bail!(format!("JSON file extension expected: {}", path.display(),))
     };
     let report: Report = read_report(&path)?;
-
     let result = filter.apply_report(report);
-    if result.confirmed.is_empty() {
-        eprintln!("No finding are confirmed.");
-        return SUCCESS;
-    }
 
+    // Bind for later use.
+    let confirmed_count = result.confirmed.len();
+    let mut out: Box<dyn Write> = match args.output {
+        Some(path) => Box::new(File::create(path)?),
+        None => Box::new(stdout()),
+    };
     match args.format {
         Format::Json => {
-            println!("{}", serde_json::to_string_pretty(&result.confirmed)?);
-            eprintln!("{} findings are confirmed.", result.confirmed.len());
+            writeln!(
+                &mut out,
+                "{}",
+                serde_json::to_string_pretty(&result.confirmed)?
+            )?;
         }
         Format::Github => {
             let title = "Secrets detected";
@@ -68,13 +78,21 @@ pub fn apply(args: ApplyArgs) -> Result {
                     "`{}` is considered as secret value. {guide}",
                     finding.secret,
                 );
-                println!(
+                // Output this to file is not usefull but for config consistency.
+                writeln!(
+                    &mut out,
                     "::warning file={file},line={line},endLine={end_line},title={title}::{message}"
-                );
+                )?;
             }
         }
     }
 
+    if confirmed_count < 1 {
+        eprintln!("No finding are confirmed.");
+        return SUCCESS;
+    }
+
+    eprintln!("{confirmed_count} findings are confirmed.");
     if args.no_fail {
         SUCCESS
     } else {
