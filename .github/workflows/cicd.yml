@@ -54,7 +54,7 @@ jobs:
           human_version="$(cargo metadata --no-deps --format-version 1 | jq -r '"v" + .packages[0].version')"
           if [ "${{ github.ref_name }}" != "${human_version}" ]; then
             echo "Tag does not match version in Cargo.toml: ${{ github.ref_name }} != ${human_version}"
-            exit 0
+            exit 1
           fi
           cargo metadata --no-deps --format-version 1 | jq -r '"name=" + .packages[0].name' | tee -a $GITHUB_OUTPUT
           cargo metadata --no-deps --format-version 1 | jq -r '"version=" + .packages[0].version' | tee -a $GITHUB_OUTPUT
