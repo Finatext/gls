@@ -7,7 +7,7 @@ use std::{
 };
 
 use anyhow::bail;
-use clap::Args;
+use clap::{Args, ValueEnum};
 use tabled::{builder::Builder, settings::Style};
 
 use crate::{
@@ -20,30 +20,52 @@ use crate::{
 
 #[derive(Debug, Args)]
 pub struct ReviewArgs {
-    #[arg(short, long, env, default_value = "allowlist.toml")]
+    /// Path to the allowlist configuration file.
+    #[arg(short, long, env)]
     config_path: PathBuf,
-    #[arg(short, long, env, default_value = "reports")]
+    /// Directory path containing the scan reports.
+    #[arg(short, long, env)]
     reports_dir_path: PathBuf,
+    /// Root directory path for searching within other option paths.
     #[arg(long, env)]
     root: Option<PathBuf>,
-    #[arg(short, long, env, default_value = "summary", value_parser = ["summary", "allowed", "confirmed", "json"])]
-    mode: String,
+    // TODO: Use enum for mode.
+    /// Review mode. `summary` for a findings summary, `allowed` for details on allowed findings,
+    /// `confirmed` for details on confirmed findings, `json` for both allowd and confirmed findings in JSON format.
+    #[arg(short, long, env, default_value = "summary")]
+    mode: Mode,
+    /// Allowlists to include. If unspecified, all allowlists are included.
     #[arg(short, long, env, conflicts_with = "skip_allowlists")]
     select_allowlists: Vec<String>,
+    /// Allowlists to exclude. If unspecified, no allowlists are excluded.
     #[arg(long, env)]
     skip_allowlists: Vec<String>,
+    /// Detection rules to include. If unspecified, all rules are included.
     #[arg(long, env, conflicts_with = "skip_rules")]
     select_rules: Vec<String>,
+    /// Detection rules to exclude. If unspecified, no rules are excluded.
     #[arg(long, env)]
     skip_rules: Vec<String>,
+    /// Output column width for the `file` attribute.
     #[arg(long, env, default_value = "120")]
     file_length: usize,
+    /// Output column width for the `secret` attribute.
     #[arg(long, env, default_value = "30")]
     secret_length: usize,
+    /// Output column width for the `line` attribute.
     #[arg(long, env, default_value = "80")]
     line_length: usize,
-    #[arg(short, long, env, required_if_eq("mode", "json"))]
+    /// Path to output results. Defaults to stdout if not specified.
+    #[arg(short, long, env)]
     output: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+enum Mode {
+    Summary,
+    Allowed,
+    Confirmed,
+    Json,
 }
 
 #[derive(Debug, Default)]
@@ -52,6 +74,7 @@ struct PerRuleResult {
     allowed: usize,
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn review(args: ReviewArgs) -> Result {
     let root = resolve_root(args.root.clone())?;
     let allowlist_path = resolve_path(args.config_path.clone(), &root);
@@ -76,27 +99,39 @@ pub fn review(args: ReviewArgs) -> Result {
         .map(|report| filter.apply_report(report))
         .collect::<Vec<FilterResult>>();
 
-    match args.mode.as_str() {
-        "summary" => print_summary(&results, &filter),
-        "allowed" => print_allowed_detail(results, &args),
-        "confirmed" => print_confirmed_detail(results, &args),
-        "json" => print_json(&results, args.output)?,
-        _ => unreachable!(),
+    let mut out: Box<dyn Write> = match args.output.as_ref() {
+        Some(path) => Box::new(File::create(path)?),
+        None => Box::new(stdout()),
+    };
+    match args.mode {
+        Mode::Summary => print_summary(&results, &filter, &mut out)?,
+        Mode::Allowed => print_allowed_detail(results, &args, &mut out)?,
+        Mode::Confirmed => print_confirmed_detail(results, &args, &mut out)?,
+        Mode::Json => print_json(&results, &mut out)?,
     }
 
     SUCCESS
 }
 
-fn print_summary(results: &[FilterResult], filter: &FindingFilter) {
-    println!("## Summary");
-    print_overview_summary(results, filter);
-    println!("\n### Confirmed findings summary");
-    print_confirmed_summary(results);
-    println!("\n### Allowed findings summary");
-    print_allowed_summary(results);
+fn print_summary(
+    results: &[FilterResult],
+    filter: &FindingFilter,
+    out: &mut dyn Write,
+) -> anyhow::Result<()> {
+    writeln!(out, "## Summary")?;
+    print_overview_summary(results, filter, out)?;
+    writeln!(out, "\n### Confirmed findings summary")?;
+    print_confirmed_summary(results, out)?;
+    writeln!(out, "\n### Allowed findings summary")?;
+    print_allowed_summary(results, out)?;
+    Ok(())
 }
 
-fn print_overview_summary(results: &[FilterResult], filter: &FindingFilter) {
+fn print_overview_summary(
+    results: &[FilterResult],
+    filter: &FindingFilter,
+    out: &mut dyn Write,
+) -> anyhow::Result<()> {
     let mut builder = Builder::default();
     builder.push_record(["item", "count"]);
     builder.push_record([s("target repositories"), results.len().to_string()]);
@@ -114,10 +149,11 @@ fn print_overview_summary(results: &[FilterResult], filter: &FindingFilter) {
     builder.push_record([s("total allowed findings"), allowed_len.to_string()]);
     builder.push_record([s("total confirmed findings"), confirmed_len.to_string()]);
 
-    println!("{}", builder.build().with(Style::markdown()));
+    writeln!(out, "{}", builder.build().with(Style::markdown()))?;
+    Ok(())
 }
 
-fn print_confirmed_summary(results: &[FilterResult]) {
+fn print_confirmed_summary(results: &[FilterResult], out: &mut dyn Write) -> anyhow::Result<()> {
     let mut builder = Builder::default();
     builder.push_record([s("rule_id"), s("total"), s("allowed"), s("confirmed")]);
 
@@ -149,10 +185,11 @@ fn print_confirmed_summary(results: &[FilterResult]) {
         ]);
     }
 
-    println!("{}", builder.build().with(Style::markdown()));
+    writeln!(out, "{}", builder.build().with(Style::markdown()))?;
+    Ok(())
 }
 
-fn print_allowed_summary(results: &[FilterResult]) {
+fn print_allowed_summary(results: &[FilterResult], out: &mut dyn Write) -> anyhow::Result<()> {
     let mut builder = Builder::default();
     builder.push_record([s("allow_list"), s("allowed count")]);
 
@@ -172,10 +209,15 @@ fn print_allowed_summary(results: &[FilterResult]) {
         builder.push_record([allowlist_id, count.to_string()]);
     }
 
-    println!("{}", builder.build().with(Style::markdown()));
+    writeln!(out, "{}", builder.build().with(Style::markdown()))?;
+    Ok(())
 }
 
-fn print_allowed_detail(results: Vec<FilterResult>, args: &ReviewArgs) {
+fn print_allowed_detail(
+    results: Vec<FilterResult>,
+    args: &ReviewArgs,
+    out: &mut dyn Write,
+) -> anyhow::Result<()> {
     let mut builder = Builder::default();
     builder.push_record([
         s("repo"),
@@ -236,11 +278,16 @@ fn print_allowed_detail(results: Vec<FilterResult>, args: &ReviewArgs) {
     } else {
         format!("{title_base} (all)")
     };
-    println!("## {title}");
-    println!("{}", builder.build().with(Style::markdown()));
+    writeln!(out, "## {title}")?;
+    writeln!(out, "{}", builder.build().with(Style::markdown()))?;
+    Ok(())
 }
 
-fn print_confirmed_detail(results: Vec<FilterResult>, args: &ReviewArgs) {
+fn print_confirmed_detail(
+    results: Vec<FilterResult>,
+    args: &ReviewArgs,
+    out: &mut dyn Write,
+) -> anyhow::Result<()> {
     let mut builder = Builder::default();
     builder.push_record([s("repo"), s("rule_id"), s("file"), s("secret"), s("line")]);
 
@@ -279,17 +326,14 @@ fn print_confirmed_detail(results: Vec<FilterResult>, args: &ReviewArgs) {
     } else {
         format!("{title_base} (all)")
     };
-    println!("## {title}");
-    println!("{}", builder.build().with(Style::markdown()));
+    writeln!(out, "## {title}")?;
+    writeln!(out, "{}", builder.build().with(Style::markdown()))?;
+    Ok(())
 }
 
-fn print_json(results: &[FilterResult], output: Option<PathBuf>) -> anyhow::Result<()> {
-    let mut out: Box<dyn Write> = match output {
-        Some(path) => Box::new(File::create(path)?),
-        None => Box::new(stdout()),
-    };
-    serde_json::to_writer_pretty(&mut out, &results)?;
-    writeln!(out)?;
+fn print_json(results: &[FilterResult], out: &mut dyn Write) -> anyhow::Result<()> {
+    let s = serde_json::to_string_pretty(&results)?;
+    writeln!(out, "{s}")?;
     Ok(())
 }
 

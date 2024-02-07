@@ -50,12 +50,14 @@ struct PathInfo<'path> {
 pub fn diff(args: DiffArgs) -> Result {
     let root = resolve_root(args.root.clone())?;
     let before_path = resolve_path(args.before.clone(), &root);
-    let before_contents = read_to_string(&before_path)?;
+    let before_contents =
+        read_to_string(&before_path).with_context(|| format!("Faild to read {before_path:?}"))?;
     let befores: Vec<FilterResult> = serde_json::from_str(&before_contents)
         .with_context(|| format!("Failed to parse JSON: {}", before_path.display()))?;
 
     let after_path = resolve_path(args.after.clone(), &root);
-    let after_contents = read_to_string(&after_path)?;
+    let after_contents =
+        read_to_string(&after_path).with_context(|| format!("Faild to read {after_path:?}"))?;
     let afters: Vec<FilterResult> = serde_json::from_str(&after_contents)
         .with_context(|| format!("Failed to parse JSON: {}", after_path.display()))?;
 
@@ -135,13 +137,13 @@ fn print_diffs_md(
     }
 
     if allowed_builder.count_records() == 1 && confirmed_builder.count_records() == 1 {
-        eprintln!("No diffs found.");
+        writeln!(out, "No diffs found.")?;
     } else {
         if allowed_builder.count_records() > 1 {
-            write_table(out, allowed_builder, path_info, "Allowed diffs")?;
+            write_table(out, allowed_builder, path_info, "Allowed findings diff")?;
         }
         if confirmed_builder.count_records() > 1 {
-            write_table(out, confirmed_builder, path_info, "Confirmed diffs")?;
+            write_table(out, confirmed_builder, path_info, "Confirmed findings diff")?;
         }
     }
     Ok(())
@@ -153,12 +155,17 @@ fn write_table(
     path_info: &PathInfo,
     title_base: &str,
 ) -> anyhow::Result<()> {
-    let title = format!(
-        "{} (before: {}, after: {})",
-        title_base,
-        path_info.before.display(),
-        path_info.after.display()
-    );
+    let before_path = path_info
+        .before
+        .file_name()
+        .with_context(|| format!("Failed to get file_name of {:?}", path_info.before))?
+        .to_string_lossy();
+    let after_path = path_info
+        .after
+        .file_name()
+        .with_context(|| format!("Failed to get file_name of {:?}", path_info.after))?
+        .to_string_lossy();
+    let title = format!("{title_base} (before: {before_path}, after: {after_path})");
     writeln!(out, "## {title}")?;
     writeln!(out, "{}", builder.build().with(Style::markdown()))?;
     Ok(())

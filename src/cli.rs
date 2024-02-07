@@ -37,7 +37,7 @@ pub fn run() -> Result {
 }
 
 #[derive(Debug, Parser)]
-#[command(version, about)]
+#[command(version, about, args_override_self(true))]
 struct Cli {
     #[command(subcommand)]
     pub command: Commands,

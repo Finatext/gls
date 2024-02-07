@@ -56,6 +56,5 @@ pub fn extract_allowlist(args: ExtractAllowlistArgs) -> Result {
         None => Box::new(io::stdout()),
     };
     write!(&mut out, "{}", toml::to_string(&config)?)?;
-    writeln!(out)?;
     SUCCESS
 }

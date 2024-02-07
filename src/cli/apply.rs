@@ -11,12 +11,12 @@ use crate::{
     cli::{resolve_path, resolve_root, Result, FAILURE, SUCCESS},
     config::read_allowlists,
     filter::FindingFilter,
-    report::{read_report, Report},
+    report::{read_report, Finding, FindingWithoutLine, Report},
 };
 
 #[derive(Debug, Args)]
 pub struct ApplyArgs {
-    #[arg(short, long, env, default_value = "allowlist.toml")]
+    #[arg(short, long, env)]
     config_path: PathBuf,
     #[arg(short, long, env)]
     report_path: PathBuf,
@@ -61,23 +61,25 @@ pub fn apply(args: ApplyArgs) -> Result {
     };
     match args.format {
         Format::Json => {
-            writeln!(
-                &mut out,
-                "{}",
-                serde_json::to_string_pretty(&result.confirmed)?
-            )?;
+            // Omit `line` for compatibility with reports from non-patched gitleaks.
+            let confirmed = result
+                .confirmed
+                .into_iter()
+                .map(Finding::into)
+                .collect::<Vec<FindingWithoutLine>>();
+            writeln!(out, "{}", serde_json::to_string_pretty(&confirmed)?)?;
         }
         Format::Github => {
             let title = "Secrets detected";
-            let guide = args.guide.unwrap_or_default();
+            let guide = args
+                .guide
+                .map_or_else(String::new, |guide| format!(" {guide}"));
             for finding in result.confirmed {
                 let file = finding.file;
                 let line = finding.start_line;
                 let end_line = finding.end_line;
-                let message = format!(
-                    "`{}` is considered as secret value. {guide}",
-                    finding.secret,
-                );
+                let message =
+                    format!("`{}` is considered as secret value.{guide}", finding.secret,);
                 // Output this to file is not usefull but for config consistency.
                 writeln!(
                     &mut out,
