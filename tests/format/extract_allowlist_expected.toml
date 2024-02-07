@@ -1,0 +1,11 @@
+[[extensions.allowlists]]
+id = "gitleaks-global-allowlist"
+targetRuleIds = []
+description = "global allow lists"
+paths = ["gitleaks.toml", "vendor"]
+
+[[extensions.allowlists]]
+id = "gitleaks-sumologic-access-id"
+targetRuleIds = ["sumologic-access-id"]
+regexes = ["sumOf"]
+regexTarget = "line"
