@@ -40,6 +40,5 @@ pub fn cleanup_allowlist(args: CleanupAllowlistArgs) -> Result {
         None => Box::new(stdout()),
     };
     write!(&mut out, "{doc}")?;
-    writeln!(out)?;
     SUCCESS
 }

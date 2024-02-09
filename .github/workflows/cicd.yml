@@ -32,6 +32,8 @@ jobs:
           components: rustfmt,clippy
       - uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84 # v2.7.3
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      # This need to be done after checkout.
+      - uses: ./.github/actions/setup_gitleaks
       - name: Check "cargo fmt"
         run: cargo fmt -- --check
       - name: Run "cargo check"

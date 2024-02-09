@@ -1,6 +1,6 @@
 use std::{
-    fs::{create_dir_all, read_dir, read_to_string, write},
-    path::{Path, PathBuf},
+    fs::{create_dir_all, read_dir},
+    path::PathBuf,
     process::{Command, Stdio},
 };
 
@@ -8,28 +8,29 @@ use anyhow::{bail, Context};
 use chrono::{DateTime, Utc};
 use clap::Args;
 use rayon::{prelude::*, ThreadPoolBuilder};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::cli::{resolve_path, resolve_root, Result, SUCCESS};
 
+/// Scan repositories for secrets using gitleaks.
 #[derive(Debug, Args)]
 pub struct ScanArgs {
-    #[arg(long, env)]
-    org: String,
+    /// Path to the gitleaks binary.
     #[arg(short, long, env)]
     gitleaks_path: PathBuf,
+    /// Path to the target repositories.
     #[arg(short, long, env)]
     repos_path: PathBuf,
+    /// Repositories to skip scanning.
+    #[arg(long, env)]
+    skip_repos: Vec<String>,
+    /// Path to gitleaks config file.
     #[arg(short, long, env)]
     config: PathBuf,
+    /// Path to save the scan reports. The scan reports are saved with `<repo_name>.json` file name format.
     #[arg(short, long, env)]
     output: PathBuf,
-    #[arg(long, env, default_value = "cache/repos.json")]
-    cache_path: PathBuf,
-    #[arg(short = 'f', long, env)]
-    refresh_cache: bool,
-    #[arg(short, long, env)]
-    target_pushed_at: Option<DateTime<Utc>>,
+    /// Number of threads to use for parallel scanning.
     #[arg(long, env)]
     threads: Option<usize>,
 }
@@ -43,21 +44,16 @@ struct Repo {
 
 pub fn scan(args: ScanArgs) -> Result {
     let root = resolve_root(None)?;
-    let gitleaks_path = resolve_path(args.gitleaks_path, &root);
+    let gitleaks_path = args.gitleaks_path;
     let repos_path = resolve_path(args.repos_path, &root);
     let config_path = resolve_path(args.config, &root);
     let output_path = resolve_path(args.output, &root);
-    let cache_path = resolve_path(args.cache_path, &root);
     if let Some(threads) = args.threads {
         ThreadPoolBuilder::new()
             .num_threads(threads)
             .build_global()?;
     }
     create_dir_all(&output_path)?;
-
-    let repos = with_cache(args.refresh_cache, &cache_path, || {
-        fetch_target_repos(&args.org)
-    })?;
 
     let mut dirs: Vec<_> = read_dir(&repos_path)
         .with_context(|| format!("Failed to read dir: {repos_path:?}"))?
@@ -75,14 +71,9 @@ pub fn scan(args: ScanArgs) -> Result {
         })?;
     dirs.sort();
 
-    let (targets, non_targets): (Vec<_>, Vec<_>) = dirs.into_iter().partition(|directory_name| {
-        match repos.iter().find(|repo| repo.name == *directory_name) {
-            Some(repo) => args
-                .target_pushed_at
-                .map_or(true, |target_pushed_at| repo.pushed_at >= target_pushed_at),
-            None => false,
-        }
-    });
+    let (targets, non_targets): (Vec<_>, Vec<_>) = dirs
+        .into_iter()
+        .partition(|directory_name| !args.skip_repos.iter().any(|name| name == directory_name));
     println!("Skipping: {}", non_targets.join(", "));
 
     targets.par_iter().try_for_each(|directory_name| {
@@ -100,7 +91,9 @@ pub fn scan(args: ScanArgs) -> Result {
             .stdin(Stdio::null());
 
         println!("{directory_name}: start scanning");
-        let output = command.output()?;
+        let output = command
+            .output()
+            .with_context(|| format!("Failed to run gitleaks: {command:?}"))?;
         if output.status.success() {
             println!("{directory_name}: successfully scanned");
             Ok(())
@@ -115,67 +108,4 @@ pub fn scan(args: ScanArgs) -> Result {
     })?;
 
     SUCCESS
-}
-
-fn fetch_target_repos(org: &str) -> anyhow::Result<Vec<Repo>> {
-    let mut command = build_command(org);
-    println!("Fetching target repo list: {}", command_to_string(&command));
-    let output = command.output()?;
-    if !output.status.success() {
-        bail!(
-            "Failed to fetch target repo list: {}",
-            command_to_string(&command)
-        );
-    }
-    let contents = String::from_utf8(output.stdout)?;
-    serde_json::from_str::<Vec<Repo>>(&contents)
-        .with_context(|| format!("Failed to parse repo list: {}", command_to_string(&command)))
-}
-
-fn with_cache<T, F>(refresh: bool, cache_path: &Path, generator: F) -> anyhow::Result<T>
-where
-    T: Serialize + DeserializeOwned,
-    F: FnOnce() -> anyhow::Result<T>,
-{
-    if !refresh && cache_path.exists() {
-        let contents = read_to_string(cache_path)?;
-        serde_json::from_str(&contents).with_context(|| format!("Failed to parse {cache_path:?}"))
-    } else {
-        let data = generator()?;
-        let json = serde_json::to_string(&data)?;
-        create_dir_all(
-            cache_path
-                .parent()
-                .with_context(|| format!("Failed to get parent directory of {cache_path:?}"))?,
-        )?;
-        write(cache_path, json).with_context(|| format!("Failed to write to {cache_path:?}"))?;
-        Ok(data)
-    }
-}
-
-fn build_command(org: &str) -> Command {
-    let mut c = Command::new("gh");
-    c.arg("repo")
-        .arg("list")
-        .arg(org)
-        .arg("--visibility")
-        .arg("private")
-        .arg("--source")
-        .arg("--limit")
-        .arg("10000")
-        .arg("--no-archived")
-        .arg("--json=name,pushedAt");
-    c
-}
-
-fn command_to_string(command: &Command) -> String {
-    let args = command
-        .get_args()
-        .map(|arg| arg.to_string_lossy())
-        .collect::<Vec<_>>();
-    format!(
-        "{} {}",
-        command.get_program().to_string_lossy(),
-        args.join(" ")
-    )
 }

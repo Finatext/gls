@@ -16,17 +16,16 @@ pub struct CleanupRuleArgs {
     source: PathBuf,
     #[arg(short, long, env)]
     output: Option<PathBuf>,
-    #[arg(short, long, env)]
     rules: Vec<String>,
 }
 
 pub fn cleanup_rule(args: CleanupRuleArgs) -> Result {
     let targets = args.rules;
     if targets.is_empty() {
-        eprintln!("No targets specified. Use `--rules` to specify which rules to remove.");
+        eprintln!("No target rules specified.");
         return FAILURE;
     }
-    println!("Targets: {}", targets.join(", "));
+    println!("Target rules: {}", targets.join(", "));
 
     let contents = read_to_string(&args.source)?;
     let mut doc = contents.parse::<Document>()?;
@@ -79,6 +78,5 @@ pub fn cleanup_rule(args: CleanupRuleArgs) -> Result {
         None => Box::new(stdout()),
     };
     write!(&mut out, "{doc}")?;
-    writeln!(out)?;
     SUCCESS
 }
