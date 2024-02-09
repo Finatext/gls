@@ -2,7 +2,7 @@ mod runner;
 mod setup;
 
 #[cfg(test)]
-mod secrets_scan {
+mod detect {
     use std::{
         fs::read_to_string,
         io::{stderr, stdout, Write as _},
