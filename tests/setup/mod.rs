@@ -5,7 +5,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use tempfile::{tempdir, TempDir};
 
 struct Git<'path> {
@@ -15,12 +15,18 @@ struct Git<'path> {
 impl Git<'_> {
     fn run(&self, args: &[&str]) -> Result<()> {
         let mut command = Command::new("git");
-        command
+        let output = command
             .args(args)
             .current_dir(self.cwd)
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .status()?;
+            .output()
+            .with_context(|| "Running git failed")?;
+        if !output.status.success() {
+            bail!(
+                "git run but failed: command={command:?}\n{}\n{}",
+                String::from_utf8_lossy(&output.stderr),
+                String::from_utf8_lossy(&output.stdout)
+            );
+        }
         Ok(())
     }
 }
