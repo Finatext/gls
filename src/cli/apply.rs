@@ -11,7 +11,7 @@ use crate::{
     cli::{resolve_path, resolve_root, Result, FAILURE, SUCCESS},
     config::read_allowlists,
     filter::FindingFilter,
-    report::{read_report, Finding, FindingWithoutLine, Report},
+    report::{read_report, FindingWithoutLine, Report},
 };
 
 #[derive(Debug, Args)]
@@ -65,8 +65,8 @@ pub fn apply(args: ApplyArgs) -> Result {
             let confirmed = result
                 .confirmed
                 .into_iter()
-                .map(Finding::into)
-                .collect::<Vec<FindingWithoutLine>>();
+                .map(FindingWithoutLine::from)
+                .collect::<Vec<_>>();
             writeln!(out, "{}", serde_json::to_string_pretty(&confirmed)?)?;
         }
         Format::Github => {
