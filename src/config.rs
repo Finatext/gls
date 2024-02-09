@@ -1,6 +1,6 @@
 use std::{collections::HashSet, fs::read_to_string, path::Path, str::FromStr};
 
-use anyhow::{bail, Context as _};
+use anyhow::{bail, Context as _, Result};
 use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -139,7 +139,7 @@ impl FromStr for RegexTarget {
     }
 }
 
-fn validate_duplication(allowlists: &[Allowlist]) -> anyhow::Result<()> {
+fn validate_duplication(allowlists: &[Allowlist]) -> Result<()> {
     let mut ids = HashSet::new();
     for allowlist in allowlists {
         if !ids.insert(&allowlist.id) {

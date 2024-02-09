@@ -5,7 +5,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-use anyhow::bail;
+use anyhow::{bail, Result};
 use tempfile::{tempdir, TempDir};
 
 struct Git<'path> {
@@ -13,7 +13,7 @@ struct Git<'path> {
 }
 
 impl Git<'_> {
-    fn run(&self, args: &[&str]) -> anyhow::Result<()> {
+    fn run(&self, args: &[&str]) -> Result<()> {
         let mut command = Command::new("git");
         command
             .args(args)
@@ -25,7 +25,7 @@ impl Git<'_> {
     }
 }
 
-pub fn check_gitleaks() -> anyhow::Result<()> {
+pub fn check_gitleaks() -> Result<()> {
     let mut cmd = Command::new("which");
     cmd.arg("gitleaks").stdout(Stdio::null());
     let res = cmd.status();
@@ -72,7 +72,7 @@ pub fn setup_repos_dir(repo_name: &str) -> anyhow::Result<TempDir> {
     Ok(temp)
 }
 
-fn create_file(path: &Path, content: &str) -> anyhow::Result<()> {
+fn create_file(path: &Path, content: &str) -> Result<()> {
     let mut file = File::create(path)?;
     writeln!(file, "{content}")?;
     Ok(())
