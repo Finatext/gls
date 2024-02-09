@@ -1,4 +1,5 @@
 use std::{
+    env,
     fs::{create_dir_all, File},
     io::Write,
     path::Path,
@@ -73,6 +74,17 @@ pub fn setup_repos_dir(repo_name: &str) -> anyhow::Result<TempDir> {
     let git = Git { cwd: &repo_dir };
     git.run(&["init"])?;
     git.run(&["add", "."])?;
+    match env::var("GITHUB_ACTIONS") {
+        Ok(v) if v == "true" => {
+            git.run(&["config", "user.name", "github-actions[bot]"])?;
+            git.run(&[
+                "config",
+                "user.email",
+                "github-actions[bot]@users.noreply.github.com",
+            ])?;
+        }
+        _ => {}
+    }
     git.run(&["commit", "-m", "initial commit"])?;
 
     Ok(temp)
