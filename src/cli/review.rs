@@ -244,6 +244,7 @@ fn print_allowed_detail(
                 finding
                     .line
                     .chars()
+                    .skip_while(|c| c == &'\n')
                     .take(args.line_length)
                     .take_while(|c| c != &'\n')
                     .collect(),
