@@ -21,7 +21,7 @@ mod develop_config {
         setup::{check_gitleaks, setup_repos_dir},
     };
 
-    pub fn run_review(
+    fn run_review(
         reports_dir_path: &Path,
         option_fns: &[&dyn Fn(&mut Command) -> &mut Command],
     ) -> Result<Output> {
@@ -41,49 +41,56 @@ mod develop_config {
         Ok(res)
     }
 
-    pub fn mode<'mode>(mode: &'mode str) -> Box<dyn Fn(&mut Command) -> &mut Command + 'mode> {
+    fn mode<'mode>(mode: &'mode str) -> Box<dyn Fn(&mut Command) -> &mut Command + 'mode> {
         Box::new(|cmd: &mut Command| cmd.args(["--mode", mode]))
     }
 
-    pub fn secret_length(length: usize) -> Box<dyn Fn(&mut Command) -> &mut Command> {
+    fn secret_length(length: usize) -> Box<dyn Fn(&mut Command) -> &mut Command> {
         Box::new(move |cmd: &mut Command| cmd.args(["--secret-length", &length.to_string()]))
     }
 
     // Set `--select-allowlists` option. Pass option value as comma separated str.
-    pub fn select_allowlists<'str>(
+    fn select_allowlists<'str>(
         allowlists_str: &'str str,
     ) -> Box<dyn Fn(&mut Command) -> &mut Command + 'str> {
         Box::new(|cmd: &mut Command| cmd.args(["--select-allowlists", allowlists_str]))
     }
 
-    pub fn skip_allowlists<'str>(
+    fn skip_allowlists<'str>(
         allowlists_str: &'str str,
     ) -> Box<dyn Fn(&mut Command) -> &mut Command + 'str> {
         Box::new(|cmd: &mut Command| cmd.args(["--skip-allowlists", allowlists_str]))
     }
 
-    pub fn select_rules<'str>(
+    fn select_rules<'str>(
         rules_str: &'str str,
     ) -> Box<dyn Fn(&mut Command) -> &mut Command + 'str> {
         Box::new(|cmd: &mut Command| cmd.args(["--select-rules", rules_str]))
     }
 
-    pub fn skip_rules<'str>(
-        rules_str: &'str str,
-    ) -> Box<dyn Fn(&mut Command) -> &mut Command + 'str> {
+    fn skip_rules<'str>(rules_str: &'str str) -> Box<dyn Fn(&mut Command) -> &mut Command + 'str> {
         Box::new(|cmd: &mut Command| cmd.args(["--skip-rules", rules_str]))
     }
 
-    pub fn config_path<'path>(
+    fn config_path<'path>(
         config_path: &'path Path,
     ) -> Box<dyn Fn(&mut Command) -> &mut Command + 'path> {
         Box::new(|cmd: &mut Command| cmd.args(["--config-path", config_path.to_str().unwrap()]))
     }
 
-    pub fn output<'path>(
+    fn output<'path>(
         output_path: &'path Path,
     ) -> Box<dyn Fn(&mut Command) -> &mut Command + 'path> {
         Box::new(|cmd: &mut Command| cmd.args(["--output", output_path.to_str().unwrap()]))
+    }
+
+    fn compare(actual: &str, expected: &str) -> Result<()> {
+        if actual != expected {
+            println!("actual:\n\n{actual}");
+            println!("expected:\n\n{expected}");
+            bail!("actual and expected are different")
+        }
+        Ok(())
     }
 
     #[allow(clippy::too_many_lines)]
@@ -136,29 +143,32 @@ mod develop_config {
             |-------------|---------------|
             | test-secret | 1             |
             " };
-            assert_eq!(String::from_utf8_lossy(&res.stdout), expected);
+            let actual = String::from_utf8_lossy(&res.stdout);
+            compare(&actual, expected)?;
         }
         {
             // Test `allowed` mode
             let res = run_review(reports_dir.path(), &[&mode("allowed")])?;
             let expected = indoc! { "
             ## Allowed findings (all)
-            | repo      | allowlist   | rule_id | file       | secret   | line |
-            |-----------|-------------|---------|------------|----------|------|
-            | test_repo | test-secret | test    | secret.txt | deadbeef |      |
+            | repo      | allowlist   | rule_id | file       | secret   | line                  |
+            |-----------|-------------|---------|------------|----------|-----------------------|
+            | test_repo | test-secret | test    | secret.txt | deadbeef | secret_key = deadbeef |
             " };
-            assert_eq!(String::from_utf8_lossy(&res.stdout), expected);
+            let actual = String::from_utf8_lossy(&res.stdout);
+            compare(&actual, expected)?;
         }
         {
             // Test secret_length option
             let res = run_review(reports_dir.path(), &[&mode("allowed"), &secret_length(3)])?;
             let expected = indoc! { "
             ## Allowed findings (all)
-            | repo      | allowlist   | rule_id | file       | secret | line |
-            |-----------|-------------|---------|------------|--------|------|
-            | test_repo | test-secret | test    | secret.txt | dea    |      |
+            | repo      | allowlist   | rule_id | file       | secret | line                  |
+            |-----------|-------------|---------|------------|--------|-----------------------|
+            | test_repo | test-secret | test    | secret.txt | dea    | secret_key = deadbeef |
             " };
-            assert_eq!(String::from_utf8_lossy(&res.stdout), expected);
+            let actual = String::from_utf8_lossy(&res.stdout);
+            compare(&actual, expected)?;
         }
         {
             // Test `confirmed` mode
@@ -169,14 +179,14 @@ mod develop_config {
                     &config_path(Path::new("tests/testdata/empty_allowlist.toml")),
                 ],
             )?;
-            // No confirmed findings
             let expected = indoc! { "
             ## Confirmed findings (all)
-            | repo      | rule_id | file       | secret   | line |
-            |-----------|---------|------------|----------|------|
-            | test_repo | test    | secret.txt | deadbeef |      |
+            | repo      | rule_id | file       | secret   | line                  |
+            |-----------|---------|------------|----------|-----------------------|
+            | test_repo | test    | secret.txt | deadbeef | secret_key = deadbeef |
             " };
-            assert_eq!(String::from_utf8_lossy(&res.stdout), expected);
+            let actual = String::from_utf8_lossy(&res.stdout);
+            compare(&actual, expected)?;
         }
         {
             // Test `select_allowlists` option
@@ -186,11 +196,12 @@ mod develop_config {
             )?;
             let expected = indoc! { "
             ## Allowed findings (selected: test-secret)
-            | repo      | allowlist   | rule_id | file       | secret   | line |
-            |-----------|-------------|---------|------------|----------|------|
-            | test_repo | test-secret | test    | secret.txt | deadbeef |      |
+            | repo      | allowlist   | rule_id | file       | secret   | line                  |
+            |-----------|-------------|---------|------------|----------|-----------------------|
+            | test_repo | test-secret | test    | secret.txt | deadbeef | secret_key = deadbeef |
             " };
-            assert_eq!(String::from_utf8_lossy(&res.stdout), expected);
+            let actual = String::from_utf8_lossy(&res.stdout);
+            compare(&actual, expected)?;
         }
         {
             // Test `select_allowlists` option
@@ -203,7 +214,8 @@ mod develop_config {
             | repo | allowlist | rule_id | file | secret | line |
             |------|-----------|---------|------|--------|------|
             " };
-            assert_eq!(String::from_utf8_lossy(&res.stdout), expected);
+            let actual = String::from_utf8_lossy(&res.stdout);
+            compare(&actual, expected)?;
         }
         {
             // Test `skip_allowlists` option
@@ -216,7 +228,8 @@ mod develop_config {
             | repo | allowlist | rule_id | file | secret | line |
             |------|-----------|---------|------|--------|------|
             " };
-            assert_eq!(String::from_utf8_lossy(&res.stdout), expected);
+            let actual = String::from_utf8_lossy(&res.stdout);
+            compare(&actual, expected)?;
         }
         {
             // Test `select_rules` option
@@ -230,11 +243,12 @@ mod develop_config {
             )?;
             let expected = indoc! { "
             ## Confirmed findings (selected: test)
-            | repo      | rule_id | file       | secret   | line |
-            |-----------|---------|------------|----------|------|
-            | test_repo | test    | secret.txt | deadbeef |      |
+            | repo      | rule_id | file       | secret   | line                  |
+            |-----------|---------|------------|----------|-----------------------|
+            | test_repo | test    | secret.txt | deadbeef | secret_key = deadbeef |
             " };
-            assert_eq!(String::from_utf8_lossy(&res.stdout), expected);
+            let actual = String::from_utf8_lossy(&res.stdout);
+            compare(&actual, expected)?;
         }
         {
             // Test `skip_rules` option
@@ -251,7 +265,8 @@ mod develop_config {
             | repo | rule_id | file | secret | line |
             |------|---------|------|--------|------|
             " };
-            assert_eq!(String::from_utf8_lossy(&res.stdout), expected);
+            let actual = String::from_utf8_lossy(&res.stdout);
+            compare(&actual, expected)?;
         }
         {
             // Test `json` mode
@@ -327,15 +342,16 @@ mod develop_config {
         }
         let expected = indoc! { "
         ## Allowed findings diff (before: before.json, after: after.json)
-        | repo      | allowlist   | rule_id | file       | secret   | line |
-        |-----------|-------------|---------|------------|----------|------|
-        | test_repo | test-secret | test    | secret.txt | deadbeef |      |
+        | repo      | allowlist   | rule_id | file       | secret   | line                  |
+        |-----------|-------------|---------|------------|----------|-----------------------|
+        | test_repo | test-secret | test    | secret.txt | deadbeef | secret_key = deadbeef |
         ## Confirmed findings diff (before: before.json, after: after.json)
-        | repo      | rule_id | file       | secret   | line |
-        |-----------|---------|------------|----------|------|
-        | test_repo | test    | secret.txt | deadbeef |      |
+        | repo      | rule_id | file       | secret   | line                  |
+        |-----------|---------|------------|----------|-----------------------|
+        | test_repo | test    | secret.txt | deadbeef | secret_key = deadbeef |
         " };
-        assert_eq!(String::from_utf8_lossy(&res.stdout), expected);
+        let actual = String::from_utf8_lossy(&res.stdout);
+        compare(&actual, expected)?;
 
         Ok(())
     }

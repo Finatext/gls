@@ -91,47 +91,29 @@ fn print_diffs_md(
     args: &DiffArgs,
 ) -> anyhow::Result<()> {
     let mut allowed_builder = Builder::default();
-    allowed_builder.push_record([
-        s("repo"),
-        s("allowlist"),
-        s("rule_id"),
-        s("file"),
-        s("secret"),
-        s("line"),
-    ]);
+    allowed_builder.push_record(["repo", "allowlist", "rule_id", "file", "secret", "line"]);
     let mut confirmed_builder = Builder::default();
-    confirmed_builder.push_record([s("repo"), s("rule_id"), s("file"), s("secret"), s("line")]);
+    confirmed_builder.push_record(["repo", "rule_id", "file", "secret", "line"]);
 
     for result in diffs {
         for allowed_finding in result.allowed {
             let finding = allowed_finding.finding;
-            // TODO: Make a function to convert finding to a row. review.rs has a similar logic.
             allowed_builder.push_record([
-                result.repo_name.clone(),
-                allowed_finding.allow_rule_id,
-                finding.rule_id,
-                finding.file.chars().take(args.file_length).collect(),
-                finding.secret.chars().take(args.secret_length).collect(),
-                finding
-                    .line
-                    .chars()
-                    .take(args.line_length)
-                    .take_while(|c| c != &'\n')
-                    .collect(),
+                &result.repo_name,
+                &allowed_finding.allow_rule_id,
+                &finding.rule_id,
+                &finding.file_in_length(args.file_length),
+                &finding.secret_in_length(args.secret_length),
+                &finding.line_in_length(args.line_length),
             ]);
         }
         for finding in result.confirmed {
             confirmed_builder.push_record([
-                result.repo_name.clone(),
-                finding.rule_id.clone(),
-                finding.file.chars().take(args.file_length).collect(),
-                finding.secret.chars().take(args.secret_length).collect(),
-                finding
-                    .line
-                    .chars()
-                    .take(args.line_length)
-                    .take_while(|c| c != &'\n')
-                    .collect(),
+                &result.repo_name,
+                &finding.rule_id,
+                &finding.file_in_length(args.file_length),
+                &finding.secret_in_length(args.secret_length),
+                &finding.line_in_length(args.line_length),
             ]);
         }
     }
@@ -169,8 +151,4 @@ fn write_table(
     writeln!(out, "## {title}")?;
     writeln!(out, "{}", builder.build().with(Style::markdown()))?;
     Ok(())
-}
-
-fn s(str: &str) -> String {
-    str.to_owned()
 }

@@ -15,7 +15,7 @@ use crate::{
     collect_dir,
     config::read_allowlists,
     filter::{FilterResult, FindingFilter},
-    report::read_report,
+    report::{read_report, AllowedFinding},
 };
 
 #[derive(Debug, Args)]
@@ -29,7 +29,6 @@ pub struct ReviewArgs {
     /// Root directory path for searching within other option paths.
     #[arg(long, env)]
     root: Option<PathBuf>,
-    // TODO: Use enum for mode.
     /// Review mode. `summary` for a findings summary, `allowed` for details on allowed findings,
     /// `confirmed` for details on confirmed findings, `json` for both allowd and confirmed findings in JSON format.
     #[arg(short, long, env, default_value = "summary")]
@@ -134,20 +133,14 @@ fn print_overview_summary(
 ) -> anyhow::Result<()> {
     let mut builder = Builder::default();
     builder.push_record(["item", "count"]);
-    builder.push_record([s("target repositories"), results.len().to_string()]);
-    builder.push_record([
-        s("enabled allowlists"),
-        filter.allowlists_size().to_string(),
-    ]);
+    builder.push_record(["target repositories", &results.len().to_string()]);
+    builder.push_record(["enabled allowlists", &filter.allowlists_size().to_string()]);
 
     let confirmed_len = results.iter().map(|r| r.confirmed.len()).sum::<usize>();
     let allowed_len = results.iter().map(|r| r.allowed.len()).sum::<usize>();
-    builder.push_record([
-        s("total findings"),
-        (confirmed_len + allowed_len).to_string(),
-    ]);
-    builder.push_record([s("total allowed findings"), allowed_len.to_string()]);
-    builder.push_record([s("total confirmed findings"), confirmed_len.to_string()]);
+    builder.push_record(["total findings", &(confirmed_len + allowed_len).to_string()]);
+    builder.push_record(["total allowed findings", &allowed_len.to_string()]);
+    builder.push_record(["total confirmed findings", &confirmed_len.to_string()]);
 
     writeln!(out, "{}", builder.build().with(Style::markdown()))?;
     Ok(())
@@ -155,7 +148,7 @@ fn print_overview_summary(
 
 fn print_confirmed_summary(results: &[FilterResult], out: &mut dyn Write) -> anyhow::Result<()> {
     let mut builder = Builder::default();
-    builder.push_record([s("rule_id"), s("total"), s("allowed"), s("confirmed")]);
+    builder.push_record(["rule_id", "total", "allowed", "confirmed"]);
 
     let results_by_rule_id: BTreeMap<String, PerRuleResult> =
         results.iter().fold(BTreeMap::new(), |acc, result| {
@@ -178,10 +171,10 @@ fn print_confirmed_summary(results: &[FilterResult], out: &mut dyn Write) -> any
     results_by_rule_id_sorted.sort_by_key(|(_, r)| Reverse(r.confirmed));
     for (rule_id, per_result) in &results_by_rule_id_sorted {
         builder.push_record([
-            rule_id.clone(),
-            (per_result.confirmed + per_result.allowed).to_string(),
-            per_result.allowed.to_string(),
-            per_result.confirmed.to_string(),
+            &rule_id,
+            &(per_result.confirmed + per_result.allowed).to_string(),
+            &per_result.allowed.to_string(),
+            &per_result.confirmed.to_string(),
         ]);
     }
 
@@ -191,7 +184,7 @@ fn print_confirmed_summary(results: &[FilterResult], out: &mut dyn Write) -> any
 
 fn print_allowed_summary(results: &[FilterResult], out: &mut dyn Write) -> anyhow::Result<()> {
     let mut builder = Builder::default();
-    builder.push_record([s("allow_list"), s("allowed count")]);
+    builder.push_record(["allow_list", "allowed count"]);
 
     let results_by_allowlist = results.iter().fold(BTreeMap::new(), |acc, result| {
         result.allowed.iter().fold(acc, |mut acc, finding| {
@@ -206,7 +199,7 @@ fn print_allowed_summary(results: &[FilterResult], out: &mut dyn Write) -> anyho
         .collect::<Vec<(String, usize)>>();
     results_by_allowlist_sorted.sort_by_key(|(_, count)| Reverse(*count));
     for (allowlist_id, count) in results_by_allowlist_sorted {
-        builder.push_record([allowlist_id, count.to_string()]);
+        builder.push_record([&allowlist_id, &count.to_string()]);
     }
 
     writeln!(out, "{}", builder.build().with(Style::markdown()))?;
@@ -219,45 +212,21 @@ fn print_allowed_detail(
     out: &mut dyn Write,
 ) -> anyhow::Result<()> {
     let mut builder = Builder::default();
-    builder.push_record([
-        s("repo"),
-        s("allowlist"),
-        s("rule_id"),
-        s("file"),
-        s("secret"),
-        s("line"),
-    ]);
+    builder.push_record(["repo", "allowlist", "rule_id", "file", "secret", "line"]);
 
     for result in results {
         for allowed_finding in result.allowed {
-            if !args.select_allowlists.is_empty()
-                && !args
-                    .select_allowlists
-                    .contains(&allowed_finding.allow_rule_id)
-            {
-                continue;
-            }
-            if args
-                .skip_allowlists
-                .contains(&allowed_finding.allow_rule_id)
-            {
+            if is_selected(args, &allowed_finding) || should_skip(args, &allowed_finding) {
                 continue;
             }
             let finding = allowed_finding.finding;
             builder.push_record([
-                result.repo_name.clone(),
-                allowed_finding.allow_rule_id,
-                finding.rule_id,
-                // XXX: Remove copying String here.
-                finding.file.chars().take(args.file_length).collect(),
-                finding.secret.chars().take(args.secret_length).collect(),
-                // XXX: Better algorithm to truncate line.
-                finding
-                    .line
-                    .chars()
-                    .take(args.line_length)
-                    .take_while(|c| c != &'\n')
-                    .collect(),
+                &result.repo_name,
+                &allowed_finding.allow_rule_id,
+                &finding.rule_id,
+                &finding.file_in_length(args.file_length),
+                &finding.secret_in_length(args.secret_length),
+                &finding.line_in_length(args.line_length),
             ]);
         }
     }
@@ -289,27 +258,22 @@ fn print_confirmed_detail(
     out: &mut dyn Write,
 ) -> anyhow::Result<()> {
     let mut builder = Builder::default();
-    builder.push_record([s("repo"), s("rule_id"), s("file"), s("secret"), s("line")]);
+    builder.push_record(["repo", "rule_id", "file", "secret", "line"]);
 
     for result in results {
         for finding in result.confirmed {
-            if !args.select_rules.is_empty() && !args.select_rules.contains(&finding.rule_id) {
-                continue;
-            }
-            if args.skip_rules.contains(&finding.rule_id) {
+            let is_selected =
+                !args.select_rules.is_empty() && !args.select_rules.contains(&finding.rule_id);
+            let should_skip = args.skip_rules.contains(&finding.rule_id);
+            if is_selected || should_skip {
                 continue;
             }
             builder.push_record([
-                result.repo_name.clone(),
-                finding.rule_id,
-                finding.file.chars().take(args.file_length).collect(),
-                finding.secret.chars().take(args.secret_length).collect(),
-                finding
-                    .line
-                    .chars()
-                    .take(args.line_length)
-                    .take_while(|c| c != &'\n')
-                    .collect(),
+                &result.repo_name,
+                &finding.rule_id,
+                &finding.file_in_length(args.file_length),
+                &finding.secret_in_length(args.secret_length),
+                &finding.line_in_length(args.line_length),
             ]);
         }
     }
@@ -331,12 +295,20 @@ fn print_confirmed_detail(
     Ok(())
 }
 
+fn is_selected(args: &ReviewArgs, allowed_finding: &AllowedFinding) -> bool {
+    !args.select_allowlists.is_empty()
+        && !args
+            .select_allowlists
+            .contains(&allowed_finding.allow_rule_id)
+}
+
+fn should_skip(args: &ReviewArgs, allowed_finding: &AllowedFinding) -> bool {
+    args.skip_allowlists
+        .contains(&allowed_finding.allow_rule_id)
+}
+
 fn print_json(results: &[FilterResult], out: &mut dyn Write) -> anyhow::Result<()> {
     let s = serde_json::to_string_pretty(&results)?;
     writeln!(out, "{s}")?;
     Ok(())
-}
-
-fn s(str: &str) -> String {
-    str.to_owned()
 }
