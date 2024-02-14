@@ -15,7 +15,7 @@ use crate::{
     collect_dir,
     config::read_allowlists,
     filter::{FilterResult, FindingFilter},
-    report::read_report,
+    report::{read_report, AllowedFinding},
 };
 
 #[derive(Debug, Args)]
@@ -229,17 +229,7 @@ fn print_allowed_detail(
 
     for result in results {
         for allowed_finding in result.allowed {
-            if !args.select_allowlists.is_empty()
-                && !args
-                    .select_allowlists
-                    .contains(&allowed_finding.allow_rule_id)
-            {
-                continue;
-            }
-            if args
-                .skip_allowlists
-                .contains(&allowed_finding.allow_rule_id)
-            {
+            if is_selected(args, &allowed_finding) || should_skip(args, &allowed_finding) {
                 continue;
             }
             let finding = allowed_finding.finding;
@@ -292,10 +282,10 @@ fn print_confirmed_detail(
 
     for result in results {
         for finding in result.confirmed {
-            if !args.select_rules.is_empty() && !args.select_rules.contains(&finding.rule_id) {
-                continue;
-            }
-            if args.skip_rules.contains(&finding.rule_id) {
+            let is_selected =
+                !args.select_rules.is_empty() && !args.select_rules.contains(&finding.rule_id);
+            let should_skip = args.skip_rules.contains(&finding.rule_id);
+            if is_selected || should_skip {
                 continue;
             }
             builder.push_record([
@@ -328,6 +318,18 @@ fn print_confirmed_detail(
     writeln!(out, "## {title}")?;
     writeln!(out, "{}", builder.build().with(Style::markdown()))?;
     Ok(())
+}
+
+fn is_selected(args: &ReviewArgs, allowed_finding: &AllowedFinding) -> bool {
+    !args.select_allowlists.is_empty()
+        && !args
+            .select_allowlists
+            .contains(&allowed_finding.allow_rule_id)
+}
+
+fn should_skip(args: &ReviewArgs, allowed_finding: &AllowedFinding) -> bool {
+    args.skip_allowlists
+        .contains(&allowed_finding.allow_rule_id)
 }
 
 fn print_json(results: &[FilterResult], out: &mut dyn Write) -> anyhow::Result<()> {
