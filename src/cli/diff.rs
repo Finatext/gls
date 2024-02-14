@@ -91,16 +91,9 @@ fn print_diffs_md(
     args: &DiffArgs,
 ) -> anyhow::Result<()> {
     let mut allowed_builder = Builder::default();
-    allowed_builder.push_record([
-        s("repo"),
-        s("allowlist"),
-        s("rule_id"),
-        s("file"),
-        s("secret"),
-        s("line"),
-    ]);
+    allowed_builder.push_record(["repo", "allowlist", "rule_id", "file", "secret", "line"]);
     let mut confirmed_builder = Builder::default();
-    confirmed_builder.push_record([s("repo"), s("rule_id"), s("file"), s("secret"), s("line")]);
+    confirmed_builder.push_record(["repo", "rule_id", "file", "secret", "line"]);
 
     for result in diffs {
         for allowed_finding in result.allowed {
@@ -158,8 +151,4 @@ fn write_table(
     writeln!(out, "## {title}")?;
     writeln!(out, "{}", builder.build().with(Style::markdown()))?;
     Ok(())
-}
-
-fn s(str: &str) -> String {
-    str.to_owned()
 }

@@ -133,20 +133,14 @@ fn print_overview_summary(
 ) -> anyhow::Result<()> {
     let mut builder = Builder::default();
     builder.push_record(["item", "count"]);
-    builder.push_record([s("target repositories"), results.len().to_string()]);
-    builder.push_record([
-        s("enabled allowlists"),
-        filter.allowlists_size().to_string(),
-    ]);
+    builder.push_record(["target repositories", &results.len().to_string()]);
+    builder.push_record(["enabled allowlists", &filter.allowlists_size().to_string()]);
 
     let confirmed_len = results.iter().map(|r| r.confirmed.len()).sum::<usize>();
     let allowed_len = results.iter().map(|r| r.allowed.len()).sum::<usize>();
-    builder.push_record([
-        s("total findings"),
-        (confirmed_len + allowed_len).to_string(),
-    ]);
-    builder.push_record([s("total allowed findings"), allowed_len.to_string()]);
-    builder.push_record([s("total confirmed findings"), confirmed_len.to_string()]);
+    builder.push_record(["total findings", &(confirmed_len + allowed_len).to_string()]);
+    builder.push_record(["total allowed findings", &allowed_len.to_string()]);
+    builder.push_record(["total confirmed findings", &confirmed_len.to_string()]);
 
     writeln!(out, "{}", builder.build().with(Style::markdown()))?;
     Ok(())
@@ -154,7 +148,7 @@ fn print_overview_summary(
 
 fn print_confirmed_summary(results: &[FilterResult], out: &mut dyn Write) -> anyhow::Result<()> {
     let mut builder = Builder::default();
-    builder.push_record([s("rule_id"), s("total"), s("allowed"), s("confirmed")]);
+    builder.push_record(["rule_id", "total", "allowed", "confirmed"]);
 
     let results_by_rule_id: BTreeMap<String, PerRuleResult> =
         results.iter().fold(BTreeMap::new(), |acc, result| {
@@ -177,10 +171,10 @@ fn print_confirmed_summary(results: &[FilterResult], out: &mut dyn Write) -> any
     results_by_rule_id_sorted.sort_by_key(|(_, r)| Reverse(r.confirmed));
     for (rule_id, per_result) in &results_by_rule_id_sorted {
         builder.push_record([
-            rule_id.clone(),
-            (per_result.confirmed + per_result.allowed).to_string(),
-            per_result.allowed.to_string(),
-            per_result.confirmed.to_string(),
+            &rule_id,
+            &(per_result.confirmed + per_result.allowed).to_string(),
+            &per_result.allowed.to_string(),
+            &per_result.confirmed.to_string(),
         ]);
     }
 
@@ -190,7 +184,7 @@ fn print_confirmed_summary(results: &[FilterResult], out: &mut dyn Write) -> any
 
 fn print_allowed_summary(results: &[FilterResult], out: &mut dyn Write) -> anyhow::Result<()> {
     let mut builder = Builder::default();
-    builder.push_record([s("allow_list"), s("allowed count")]);
+    builder.push_record(["allow_list", "allowed count"]);
 
     let results_by_allowlist = results.iter().fold(BTreeMap::new(), |acc, result| {
         result.allowed.iter().fold(acc, |mut acc, finding| {
@@ -205,7 +199,7 @@ fn print_allowed_summary(results: &[FilterResult], out: &mut dyn Write) -> anyho
         .collect::<Vec<(String, usize)>>();
     results_by_allowlist_sorted.sort_by_key(|(_, count)| Reverse(*count));
     for (allowlist_id, count) in results_by_allowlist_sorted {
-        builder.push_record([allowlist_id, count.to_string()]);
+        builder.push_record([&allowlist_id, &count.to_string()]);
     }
 
     writeln!(out, "{}", builder.build().with(Style::markdown()))?;
@@ -218,14 +212,7 @@ fn print_allowed_detail(
     out: &mut dyn Write,
 ) -> anyhow::Result<()> {
     let mut builder = Builder::default();
-    builder.push_record([
-        s("repo"),
-        s("allowlist"),
-        s("rule_id"),
-        s("file"),
-        s("secret"),
-        s("line"),
-    ]);
+    builder.push_record(["repo", "allowlist", "rule_id", "file", "secret", "line"]);
 
     for result in results {
         for allowed_finding in result.allowed {
@@ -271,7 +258,7 @@ fn print_confirmed_detail(
     out: &mut dyn Write,
 ) -> anyhow::Result<()> {
     let mut builder = Builder::default();
-    builder.push_record([s("repo"), s("rule_id"), s("file"), s("secret"), s("line")]);
+    builder.push_record(["repo", "rule_id", "file", "secret", "line"]);
 
     for result in results {
         for finding in result.confirmed {
@@ -324,8 +311,4 @@ fn print_json(results: &[FilterResult], out: &mut dyn Write) -> anyhow::Result<(
     let s = serde_json::to_string_pretty(&results)?;
     writeln!(out, "{s}")?;
     Ok(())
-}
-
-fn s(str: &str) -> String {
-    str.to_owned()
 }
