@@ -29,7 +29,6 @@ pub struct ReviewArgs {
     /// Root directory path for searching within other option paths.
     #[arg(long, env)]
     root: Option<PathBuf>,
-    // TODO: Use enum for mode.
     /// Review mode. `summary` for a findings summary, `allowed` for details on allowed findings,
     /// `confirmed` for details on confirmed findings, `json` for both allowd and confirmed findings in JSON format.
     #[arg(short, long, env, default_value = "summary")]
