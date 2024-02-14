@@ -150,7 +150,7 @@ impl From<Finding> for FindingWithoutLine {
 
 fn string_in_length(s: &str, length: usize) -> String {
     s.chars()
-        //.skip_while(|c| c == &'\n')
+        .skip_while(|c| c == &'\n')
         .take(length)
         .take_while(|c| c != &'\n')
         .collect()

@@ -151,9 +151,9 @@ mod develop_config {
             let res = run_review(reports_dir.path(), &[&mode("allowed")])?;
             let expected = indoc! { "
             ## Allowed findings (all)
-            | repo      | allowlist   | rule_id | file       | secret   | line |
-            |-----------|-------------|---------|------------|----------|------|
-            | test_repo | test-secret | test    | secret.txt | deadbeef |      |
+            | repo      | allowlist   | rule_id | file       | secret   | line                  |
+            |-----------|-------------|---------|------------|----------|-----------------------|
+            | test_repo | test-secret | test    | secret.txt | deadbeef | secret_key = deadbeef |
             " };
             let actual = String::from_utf8_lossy(&res.stdout);
             compare(&actual, expected)?;
@@ -163,9 +163,9 @@ mod develop_config {
             let res = run_review(reports_dir.path(), &[&mode("allowed"), &secret_length(3)])?;
             let expected = indoc! { "
             ## Allowed findings (all)
-            | repo      | allowlist   | rule_id | file       | secret | line |
-            |-----------|-------------|---------|------------|--------|------|
-            | test_repo | test-secret | test    | secret.txt | dea    |      |
+            | repo      | allowlist   | rule_id | file       | secret | line                  |
+            |-----------|-------------|---------|------------|--------|-----------------------|
+            | test_repo | test-secret | test    | secret.txt | dea    | secret_key = deadbeef |
             " };
             let actual = String::from_utf8_lossy(&res.stdout);
             compare(&actual, expected)?;
@@ -179,12 +179,11 @@ mod develop_config {
                     &config_path(Path::new("tests/testdata/empty_allowlist.toml")),
                 ],
             )?;
-            // No confirmed findings
             let expected = indoc! { "
             ## Confirmed findings (all)
-            | repo      | rule_id | file       | secret   | line |
-            |-----------|---------|------------|----------|------|
-            | test_repo | test    | secret.txt | deadbeef |      |
+            | repo      | rule_id | file       | secret   | line                  |
+            |-----------|---------|------------|----------|-----------------------|
+            | test_repo | test    | secret.txt | deadbeef | secret_key = deadbeef |
             " };
             let actual = String::from_utf8_lossy(&res.stdout);
             compare(&actual, expected)?;
@@ -197,9 +196,9 @@ mod develop_config {
             )?;
             let expected = indoc! { "
             ## Allowed findings (selected: test-secret)
-            | repo      | allowlist   | rule_id | file       | secret   | line |
-            |-----------|-------------|---------|------------|----------|------|
-            | test_repo | test-secret | test    | secret.txt | deadbeef |      |
+            | repo      | allowlist   | rule_id | file       | secret   | line                  |
+            |-----------|-------------|---------|------------|----------|-----------------------|
+            | test_repo | test-secret | test    | secret.txt | deadbeef | secret_key = deadbeef |
             " };
             let actual = String::from_utf8_lossy(&res.stdout);
             compare(&actual, expected)?;
@@ -244,9 +243,9 @@ mod develop_config {
             )?;
             let expected = indoc! { "
             ## Confirmed findings (selected: test)
-            | repo      | rule_id | file       | secret   | line |
-            |-----------|---------|------------|----------|------|
-            | test_repo | test    | secret.txt | deadbeef |      |
+            | repo      | rule_id | file       | secret   | line                  |
+            |-----------|---------|------------|----------|-----------------------|
+            | test_repo | test    | secret.txt | deadbeef | secret_key = deadbeef |
             " };
             let actual = String::from_utf8_lossy(&res.stdout);
             compare(&actual, expected)?;
@@ -343,13 +342,13 @@ mod develop_config {
         }
         let expected = indoc! { "
         ## Allowed findings diff (before: before.json, after: after.json)
-        | repo      | allowlist   | rule_id | file       | secret   | line |
-        |-----------|-------------|---------|------------|----------|------|
-        | test_repo | test-secret | test    | secret.txt | deadbeef |      |
+        | repo      | allowlist   | rule_id | file       | secret   | line                  |
+        |-----------|-------------|---------|------------|----------|-----------------------|
+        | test_repo | test-secret | test    | secret.txt | deadbeef | secret_key = deadbeef |
         ## Confirmed findings diff (before: before.json, after: after.json)
-        | repo      | rule_id | file       | secret   | line |
-        |-----------|---------|------------|----------|------|
-        | test_repo | test    | secret.txt | deadbeef |      |
+        | repo      | rule_id | file       | secret   | line                  |
+        |-----------|---------|------------|----------|-----------------------|
+        | test_repo | test    | secret.txt | deadbeef | secret_key = deadbeef |
         " };
         let actual = String::from_utf8_lossy(&res.stdout);
         compare(&actual, expected)?;
