@@ -84,6 +84,20 @@ impl Hash for Finding {
     }
 }
 
+impl Finding {
+    pub fn line_in_length(&self, length: usize) -> String {
+        string_in_length(&self.line, length)
+    }
+
+    pub fn file_in_length(&self, length: usize) -> String {
+        string_in_length(&self.file, length)
+    }
+
+    pub fn secret_in_length(&self, length: usize) -> String {
+        string_in_length(&self.secret, length)
+    }
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "PascalCase", deny_unknown_fields)]
 pub struct FindingWithoutLine {
@@ -132,6 +146,14 @@ impl From<Finding> for FindingWithoutLine {
             fingerprint: item.fingerprint,
         }
     }
+}
+
+fn string_in_length(s: &str, length: usize) -> String {
+    s.chars()
+        //.skip_while(|c| c == &'\n')
+        .take(length)
+        .take_while(|c| c != &'\n')
+        .collect()
 }
 
 #[cfg(test)]

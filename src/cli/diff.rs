@@ -105,33 +105,22 @@ fn print_diffs_md(
     for result in diffs {
         for allowed_finding in result.allowed {
             let finding = allowed_finding.finding;
-            // TODO: Make a function to convert finding to a row. review.rs has a similar logic.
             allowed_builder.push_record([
-                result.repo_name.clone(),
-                allowed_finding.allow_rule_id,
-                finding.rule_id,
-                finding.file.chars().take(args.file_length).collect(),
-                finding.secret.chars().take(args.secret_length).collect(),
-                finding
-                    .line
-                    .chars()
-                    .take(args.line_length)
-                    .take_while(|c| c != &'\n')
-                    .collect(),
+                &result.repo_name,
+                &allowed_finding.allow_rule_id,
+                &finding.rule_id,
+                &finding.file_in_length(args.file_length),
+                &finding.secret_in_length(args.secret_length),
+                &finding.line_in_length(args.line_length),
             ]);
         }
         for finding in result.confirmed {
             confirmed_builder.push_record([
-                result.repo_name.clone(),
-                finding.rule_id.clone(),
-                finding.file.chars().take(args.file_length).collect(),
-                finding.secret.chars().take(args.secret_length).collect(),
-                finding
-                    .line
-                    .chars()
-                    .take(args.line_length)
-                    .take_while(|c| c != &'\n')
-                    .collect(),
+                &result.repo_name,
+                &finding.rule_id,
+                &finding.file_in_length(args.file_length),
+                &finding.secret_in_length(args.secret_length),
+                &finding.line_in_length(args.line_length),
             ]);
         }
     }

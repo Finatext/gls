@@ -234,20 +234,12 @@ fn print_allowed_detail(
             }
             let finding = allowed_finding.finding;
             builder.push_record([
-                result.repo_name.clone(),
-                allowed_finding.allow_rule_id,
-                finding.rule_id,
-                // XXX: Remove copying String here.
-                finding.file.chars().take(args.file_length).collect(),
-                finding.secret.chars().take(args.secret_length).collect(),
-                // XXX: Better algorithm to truncate line.
-                finding
-                    .line
-                    .chars()
-                    .skip_while(|c| c == &'\n')
-                    .take(args.line_length)
-                    .take_while(|c| c != &'\n')
-                    .collect(),
+                &result.repo_name,
+                &allowed_finding.allow_rule_id,
+                &finding.rule_id,
+                &finding.file_in_length(args.file_length),
+                &finding.secret_in_length(args.secret_length),
+                &finding.line_in_length(args.line_length),
             ]);
         }
     }
@@ -290,16 +282,11 @@ fn print_confirmed_detail(
                 continue;
             }
             builder.push_record([
-                result.repo_name.clone(),
-                finding.rule_id,
-                finding.file.chars().take(args.file_length).collect(),
-                finding.secret.chars().take(args.secret_length).collect(),
-                finding
-                    .line
-                    .chars()
-                    .take(args.line_length)
-                    .take_while(|c| c != &'\n')
-                    .collect(),
+                &result.repo_name,
+                &finding.rule_id,
+                &finding.file_in_length(args.file_length),
+                &finding.secret_in_length(args.secret_length),
+                &finding.line_in_length(args.line_length),
             ]);
         }
     }
