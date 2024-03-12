@@ -6,7 +6,7 @@ use std::{
 
 use anyhow::Context;
 use clap::Args;
-use toml_edit::Document;
+use toml_edit::DocumentMut;
 
 use crate::cli::{Result, SUCCESS};
 
@@ -20,7 +20,7 @@ pub struct CleanupAllowlistArgs {
 
 pub fn cleanup_allowlist(args: CleanupAllowlistArgs) -> Result {
     let contents = read_to_string(&args.source)?;
-    let mut doc = contents.parse::<Document>()?;
+    let mut doc = contents.parse::<DocumentMut>()?;
     doc.remove("allowlist");
     doc.get_mut("rules")
         .context("Failed to get `.rules` entry in TOML document")?
