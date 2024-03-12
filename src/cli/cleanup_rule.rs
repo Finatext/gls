@@ -6,7 +6,7 @@ use std::{
 
 use anyhow::Context;
 use clap::Args;
-use toml_edit::Document;
+use toml_edit::DocumentMut;
 
 use crate::cli::{Result, FAILURE, SUCCESS};
 
@@ -28,7 +28,7 @@ pub fn cleanup_rule(args: CleanupRuleArgs) -> Result {
     println!("Target rules: {}", targets.join(", "));
 
     let contents = read_to_string(&args.source)?;
-    let mut doc = contents.parse::<Document>()?;
+    let mut doc = contents.parse::<DocumentMut>()?;
 
     let rules = doc
         .get_mut("rules")
