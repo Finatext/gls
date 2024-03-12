@@ -92,7 +92,7 @@ jobs:
       with:
         toolchain: stable
         targets: ${{ matrix.job.target }}
-    - uses: taiki-e/install-action@dabb9c1ee51c21c545764a0d517f069ff52e6477 # v2.28.1
+    - uses: taiki-e/install-action@4abee32ddd6d3482e57ba21814317997e6268efe # v2.28.11
       if: matrix.job.cross == true
       with:
         tool: cross
@@ -115,7 +115,7 @@ jobs:
       run: |
         sha256sum ${{ needs.crate-metadata.outputs.name }}-${{ matrix.job.target }}.tar.gz > ${{ needs.crate-metadata.outputs.name }}-${{ matrix.job.target }}.tar.gz.sha256
     - name: Upload release binary
-      uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v0.1.15
+      uses: softprops/action-gh-release@3198ee18f814cdf787321b4a32a26ddbf37acc52 # v0.1.15
       with:
         files: |
           ${{ needs.crate-metadata.outputs.name }}-${{ matrix.job.target }}.tar.gz
