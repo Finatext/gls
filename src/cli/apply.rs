@@ -4,7 +4,7 @@ use std::{
     path::PathBuf,
 };
 
-use anyhow::bail;
+use anyhow::{bail, Context as _};
 use clap::{Args, ValueEnum};
 
 use crate::{
@@ -12,6 +12,7 @@ use crate::{
     config::read_allowlists,
     filter::FindingFilter,
     report::{read_report, FindingWithoutLine, Report},
+    sarif::to_sarif,
 };
 
 #[derive(Debug, Args)]
@@ -22,6 +23,7 @@ pub struct ApplyArgs {
     report_path: PathBuf,
     #[arg(long, env)]
     root: Option<PathBuf>,
+    /// SARIF for reviewdog. JSON format reports can be used as gitleaks baseline.
     #[arg(short, long, env, default_value = "github")]
     format: Format,
     #[arg(short, long, env)]
@@ -38,6 +40,7 @@ pub struct ApplyArgs {
 enum Format {
     Json,
     Github,
+    Sarif,
 }
 
 pub fn apply(args: ApplyArgs) -> Result {
@@ -55,9 +58,16 @@ pub fn apply(args: ApplyArgs) -> Result {
 
     // Bind for later use.
     let confirmed_count = result.confirmed.len();
-    let mut out: Box<dyn Write> = match args.output {
+    let mut out: Box<dyn Write> = match &args.output {
         Some(path) => Box::new(File::create(path)?),
         None => Box::new(stdout()),
+    };
+    let msg_f = || {
+        let out_description = args
+            .output
+            .as_ref()
+            .map_or("stdout", |path| path.as_os_str().to_str().unwrap_or("file"));
+        format!("Failed to write to {out_description}, possibly piped command ends with an error")
     };
     match args.format {
         Format::Json => {
@@ -67,7 +77,15 @@ pub fn apply(args: ApplyArgs) -> Result {
                 .into_iter()
                 .map(FindingWithoutLine::from)
                 .collect::<Vec<_>>();
-            writeln!(out, "{}", serde_json::to_string_pretty(&confirmed)?)?;
+            writeln!(out, "{}", serde_json::to_string_pretty(&confirmed)?).with_context(msg_f)?;
+        }
+        Format::Sarif => {
+            let guide = args
+                .guide
+                .map_or_else(String::new, |guide| format!("\n\n{guide}"));
+            // SARIF doesn't contain `line` field, so pass original Finding-s.
+            let s = to_sarif(result.confirmed, &guide)?;
+            writeln!(out, "{s}").with_context(msg_f)?;
         }
         Format::Github => {
             let title = "Secrets detected";

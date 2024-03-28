@@ -28,12 +28,18 @@ jobs:
         with:
           toolchain: stable
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: reviewdog/action-setup@3f401fe1d58fe77e10d665ab713057375e39b887 # v1.3.0
+        with:
+          reviewdog_version: latest
       - name: Test apply
         env:
           REPORT_PATH: tmp/report.json
+          GUIDE: "see more detail at https://example.com"
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -x
           mkdir -p tmp
-          gitleaks detect --verbose --exit-code=0 --no-banner --config=dev/gitleaks.toml --report-path="${REPORT_PATH}"
-          cargo run apply --no-fail --format=github --config-path=dev/gitleaks-allowlist.toml --report-path="${REPORT_PATH}"
+          gitleaks detect --verbose --exit-code=0 --no-banner --config=tests/testdata/scan_config.toml --report-path="${REPORT_PATH}"
+          cargo run apply --no-fail --format=sarif --config-path=tests/testdata/empty_allowlist.toml | \
+            reviewdog -f=sarif -reporter=github-pr-check -level=warning -name=gls
