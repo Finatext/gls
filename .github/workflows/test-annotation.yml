@@ -36,6 +36,7 @@ jobs:
           REPORT_PATH: tmp/report.json
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
+        # Test data: secret_key = deadbeef
         run: |
           set -x
           mkdir -p tmp
