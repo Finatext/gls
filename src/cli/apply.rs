@@ -23,6 +23,7 @@ pub struct ApplyArgs {
     report_path: PathBuf,
     #[arg(long, env)]
     root: Option<PathBuf>,
+    /// SARIF for reviewdog. JSON format reports can be used as gitleaks baseline.
     #[arg(short, long, env, default_value = "github")]
     format: Format,
     #[arg(short, long, env)]
@@ -81,7 +82,7 @@ pub fn apply(args: ApplyArgs) -> Result {
         Format::Sarif => {
             let guide = args
                 .guide
-                .map_or_else(String::new, |guide| format!("\n{guide}"));
+                .map_or_else(String::new, |guide| format!("\n\n{guide}"));
             // SARIF doesn't contain `line` field, so pass original Finding-s.
             let s = to_sarif(result.confirmed, &guide)?;
             writeln!(out, "{s}").with_context(msg_f)?;
