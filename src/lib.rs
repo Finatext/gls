@@ -7,6 +7,7 @@ mod diff;
 mod filter;
 mod gitleaks_config;
 mod report;
+mod sarif;
 
 pub mod cli;
 
