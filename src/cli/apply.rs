@@ -79,8 +79,11 @@ pub fn apply(args: ApplyArgs) -> Result {
             writeln!(out, "{}", serde_json::to_string_pretty(&confirmed)?).with_context(msg_f)?;
         }
         Format::Sarif => {
+            let guide = args
+                .guide
+                .map_or_else(String::new, |guide| format!("\n{guide}"));
             // SARIF doesn't contain `line` field, so pass original Finding-s.
-            let s = to_sarif(result.confirmed)?;
+            let s = to_sarif(result.confirmed, &guide)?;
             writeln!(out, "{s}").with_context(msg_f)?;
         }
         Format::Github => {

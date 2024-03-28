@@ -115,36 +115,37 @@ struct Properties {
     tags: Vec<String>,
 }
 
-impl From<Finding> for SarifResult {
-    fn from(finding: Finding) -> Self {
-        Self {
-            message: Message {
-                text: finding.description,
-            },
-            rule_id: finding.rule_id,
-            locations: vec![Location {
-                physical_location: PhysicalLocation {
-                    artifact_location: ArtifactLocation { uri: finding.file },
-                    region: Region {
-                        start_line: finding.start_line,
-                        start_column: finding.start_column,
-                        end_line: finding.end_line,
-                        end_column: finding.end_column,
-                        snippet: Snippet {
-                            text: finding.secret,
-                        },
+fn to_result(finding: Finding, guide: &str) -> SarifResult {
+    SarifResult {
+        message: Message {
+            text: format!(
+                "`{}` rule finds possible secret: {}{guide}",
+                finding.rule_id, finding.secret
+            ),
+        },
+        rule_id: finding.rule_id,
+        locations: vec![Location {
+            physical_location: PhysicalLocation {
+                artifact_location: ArtifactLocation { uri: finding.file },
+                region: Region {
+                    start_line: finding.start_line,
+                    start_column: finding.start_column,
+                    end_line: finding.end_line,
+                    end_column: finding.end_column,
+                    snippet: Snippet {
+                        text: finding.secret,
                     },
                 },
-            }],
-            partial_fingerprints: PartialFingerprints {
-                commit_sha: finding.commit,
-                commit_message: finding.message,
-                email: finding.email,
-                author: finding.author,
-                date: finding.date,
             },
-            properties: Properties { tags: finding.tags },
-        }
+        }],
+        partial_fingerprints: PartialFingerprints {
+            commit_sha: finding.commit,
+            commit_message: finding.message,
+            email: finding.email,
+            author: finding.author,
+            date: finding.date,
+        },
+        properties: Properties { tags: finding.tags },
     }
 }
 
@@ -154,7 +155,7 @@ const DRIVER_NAME: &str = "gls";
 const DRIVER_SEMANTIC_VERSION: &str = "v0.0.0"; // TODO: embed version
 const DRIVER_INFORMATION_URI: &str = "https://github.com/Finatext/gls";
 
-pub fn to_sarif(findings: Vec<Finding>) -> anyhow::Result<String> {
+pub fn to_sarif(findings: Vec<Finding>, guide: &str) -> anyhow::Result<String> {
     let rules: HashSet<&str> = findings.iter().fold(HashSet::new(), |mut acc, finding| {
         acc.insert(&finding.rule_id);
         acc
@@ -183,7 +184,7 @@ pub fn to_sarif(findings: Vec<Finding>) -> anyhow::Result<String> {
                     rules,
                 },
             },
-            results: findings.into_iter().map(Into::into).collect(),
+            results: findings.into_iter().map(|f| to_result(f, guide)).collect(),
         }],
     };
 
