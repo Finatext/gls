@@ -151,8 +151,8 @@ fn to_result(finding: Finding, guide: &str) -> SarifResult {
 
 const SCHEMA: &str = "https://json.schemastore.org/sarif-2.1.0.json";
 const VERSION: &str = "2.1.0";
-const DRIVER_NAME: &str = "gls";
-const DRIVER_SEMANTIC_VERSION: &str = "v0.0.0"; // TODO: embed version
+const DRIVER_NAME: &str = env!("CARGO_PKG_NAME");
+const DRIVER_SEMANTIC_VERSION: &str = env!("CARGO_PKG_VERSION");
 const DRIVER_INFORMATION_URI: &str = "https://github.com/Finatext/gls";
 
 pub fn to_sarif(findings: Vec<Finding>, guide: &str) -> anyhow::Result<String> {
