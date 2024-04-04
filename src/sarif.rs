@@ -48,12 +48,11 @@ struct ShortDescription {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct SarifResult {
     message: Message,
-    #[serde(rename = "ruleId")]
     rule_id: String,
     locations: Vec<Location>,
-    #[serde(rename = "partialFingerprints")]
     partial_fingerprints: PartialFingerprints,
     properties: Properties,
 }
@@ -64,14 +63,14 @@ struct Message {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct Location {
-    #[serde(rename = "physicalLocation")]
     physical_location: PhysicalLocation,
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct PhysicalLocation {
-    #[serde(rename = "artifactLocation")]
     artifact_location: ArtifactLocation,
     region: Region,
 }
@@ -82,14 +81,11 @@ struct ArtifactLocation {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct Region {
-    #[serde(rename = "startLine")]
     start_line: usize,
-    #[serde(rename = "startColumn")]
     start_column: usize,
-    #[serde(rename = "endLine")]
     end_line: usize,
-    #[serde(rename = "endColumn")]
     end_column: usize,
     snippet: Snippet,
 }
@@ -100,10 +96,9 @@ struct Snippet {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct PartialFingerprints {
-    #[serde(rename = "commitSha")]
     commit_sha: String,
-    #[serde(rename = "commitMessage")]
     commit_message: String,
     email: String,
     author: String,
@@ -153,7 +148,7 @@ const SCHEMA: &str = "https://json.schemastore.org/sarif-2.1.0.json";
 const VERSION: &str = "2.1.0";
 const DRIVER_NAME: &str = env!("CARGO_PKG_NAME");
 const DRIVER_SEMANTIC_VERSION: &str = env!("CARGO_PKG_VERSION");
-const DRIVER_INFORMATION_URI: &str = "https://github.com/Finatext/gls";
+const DRIVER_INFORMATION_URI: &str = env!("CARGO_PKG_HOMEPAGE");
 
 pub fn to_sarif(findings: Vec<Finding>, guide: &str) -> anyhow::Result<String> {
     let rules: HashSet<&str> = findings.iter().fold(HashSet::new(), |mut acc, finding| {
