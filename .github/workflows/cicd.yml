@@ -26,7 +26,7 @@ jobs:
     name: Run CI tasks
     runs-on: ubuntu-20.04
     steps:
-      - uses: dtolnay/rust-toolchain@dc6353516c68da0f06325f42ad880f76a5e77ec9 # Latest as of 2023-11-16
+      - uses: dtolnay/rust-toolchain@bb45937a053e097f8591208d8e74c90db1873d07 # Latest as of 2023-11-16
         with:
           toolchain: stable
           components: rustfmt,clippy
@@ -89,11 +89,11 @@ jobs:
         - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest }
         - { target: x86_64-unknown-linux-musl, os: ubuntu-latest }
     steps:
-    - uses: dtolnay/rust-toolchain@dc6353516c68da0f06325f42ad880f76a5e77ec9 # Latest as of 2023-11-16
+    - uses: dtolnay/rust-toolchain@bb45937a053e097f8591208d8e74c90db1873d07 # Latest as of 2023-11-16
       with:
         toolchain: stable
         targets: ${{ matrix.job.target }}
-    - uses: taiki-e/install-action@e4ef34df890c5af6027f55257634401a93b14dc7 # v2.32.9
+    - uses: taiki-e/install-action@99774fec7fd4f75144bd0134a24a992297768308 # v2.32.17
       if: matrix.job.cross == true
       with:
         tool: cross
