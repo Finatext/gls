@@ -299,7 +299,10 @@ mod tests {
     fn test_compute_diff_confimed_diff_after_present_before() -> Result {
         let fingerprint_before = "fingerprint-before".to_owned();
         let mut allowed_finding_before = build_empty_allowed_finding();
-        allowed_finding_before.finding.fingerprint.clone_from(&fingerprint_before);
+        allowed_finding_before
+            .finding
+            .fingerprint
+            .clone_from(&fingerprint_before);
         let befores = vec![FilterResult {
             repo_name: "repo1".to_owned(),
             confirmed: vec![],
@@ -308,7 +311,10 @@ mod tests {
 
         let fingerprint_after = "fingerprint-after".to_owned();
         let mut allowed_finding_after = build_empty_allowed_finding();
-        allowed_finding_after.finding.fingerprint.clone_from(&fingerprint_after);
+        allowed_finding_after
+            .finding
+            .fingerprint
+            .clone_from(&fingerprint_after);
         let afters = vec![FilterResult {
             repo_name: "repo1".to_owned(),
             confirmed: vec![],
