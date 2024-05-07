@@ -102,11 +102,11 @@ verbose_file_reads = "warn"
 wildcard_enum_match_arm = "warn"
 
 # Enable all pedantic lints.
-pedantic = "warn"
+pedantic = { level = "warn", priority = -1 }
 # Disable some pedantic lints.
 missing_errors_doc = "allow"
 module_name_repetitions = "allow"
 if_not_else = "allow"
 
 # Enable all nursery lints.
-nursery = "warn"
+nursery = { level = "warn", priority = -1 }
