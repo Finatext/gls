@@ -163,7 +163,7 @@ mod tests {
     fn test_compute_diff_confimed_diff_before_empty_after() -> Result {
         let fingerprint = "fingerprint-a".to_owned();
         let mut finding = build_empty_finding();
-        finding.fingerprint = fingerprint.clone();
+        finding.fingerprint.clone_from(&fingerprint);
         let befores = vec![FilterResult {
             repo_name: "repo1".to_owned(),
             confirmed: vec![finding],
@@ -186,7 +186,7 @@ mod tests {
     fn test_compute_diff_confimed_diff_before_no_filter_result() -> Result {
         let fingerprint = "fingerprint-a".to_owned();
         let mut finding = build_empty_finding();
-        finding.fingerprint = fingerprint.clone();
+        finding.fingerprint.clone_from(&fingerprint);
         let befores = vec![FilterResult {
             repo_name: "repo1".to_owned(),
             confirmed: vec![finding],
@@ -206,7 +206,7 @@ mod tests {
     fn test_compute_diff_confimed_diff_before_present_after() -> Result {
         let fingerprint_before = "fingerprint-before".to_owned();
         let mut finding_before = build_empty_finding();
-        finding_before.fingerprint = fingerprint_before.clone();
+        finding_before.fingerprint.clone_from(&fingerprint_before);
         let befores = vec![FilterResult {
             repo_name: "repo1".to_owned(),
             confirmed: vec![finding_before],
@@ -215,7 +215,7 @@ mod tests {
 
         let fingerprint_after = "fingerprint-after".to_owned();
         let mut finding_after = build_empty_finding();
-        finding_after.fingerprint = fingerprint_after.clone();
+        finding_after.fingerprint.clone_from(&fingerprint_after);
         let afters = vec![FilterResult {
             repo_name: "repo1".to_owned(),
             confirmed: vec![finding_after],
@@ -235,7 +235,7 @@ mod tests {
     fn test_compute_diff_confimed_diff_after() -> Result {
         let fingerprint = "fingerprint-a".to_owned();
         let mut finding = build_empty_finding();
-        finding.fingerprint = fingerprint.clone();
+        finding.fingerprint.clone_from(&fingerprint);
         let befores = vec![build_empty_filter_result("repo1")];
         let afters = vec![FilterResult {
             repo_name: "repo1".to_owned(),
@@ -255,7 +255,7 @@ mod tests {
     fn test_compute_diff_allowed_diff_before() -> Result {
         let fingerprint = "fingerprint-a".to_owned();
         let mut allowed_finding = build_empty_allowed_finding();
-        allowed_finding.finding.fingerprint = fingerprint.clone();
+        allowed_finding.finding.fingerprint.clone_from(&fingerprint);
         let befores = vec![FilterResult {
             repo_name: "repo1".to_owned(),
             confirmed: vec![],
@@ -279,7 +279,7 @@ mod tests {
     fn test_compute_diff_confimed_diff_after_no_filter_result() -> Result {
         let fingerprint = "fingerprint-a".to_owned();
         let mut finding = build_empty_finding();
-        finding.fingerprint = fingerprint.clone();
+        finding.fingerprint.clone_from(&fingerprint);
         let befores = vec![];
         let afters = vec![FilterResult {
             repo_name: "repo1".to_owned(),
@@ -299,7 +299,10 @@ mod tests {
     fn test_compute_diff_confimed_diff_after_present_before() -> Result {
         let fingerprint_before = "fingerprint-before".to_owned();
         let mut allowed_finding_before = build_empty_allowed_finding();
-        allowed_finding_before.finding.fingerprint = fingerprint_before.clone();
+        allowed_finding_before
+            .finding
+            .fingerprint
+            .clone_from(&fingerprint_before);
         let befores = vec![FilterResult {
             repo_name: "repo1".to_owned(),
             confirmed: vec![],
@@ -308,7 +311,10 @@ mod tests {
 
         let fingerprint_after = "fingerprint-after".to_owned();
         let mut allowed_finding_after = build_empty_allowed_finding();
-        allowed_finding_after.finding.fingerprint = fingerprint_after.clone();
+        allowed_finding_after
+            .finding
+            .fingerprint
+            .clone_from(&fingerprint_after);
         let afters = vec![FilterResult {
             repo_name: "repo1".to_owned(),
             confirmed: vec![],

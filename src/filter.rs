@@ -209,7 +209,7 @@ mod tests {
         let mut finding = build_empty_finding();
 
         allowlist.stopwords = Some(vec!["dev".to_owned()]);
-        finding.secret = "334-dev-kjdlsa93428".to_owned();
+        "334-dev-kjdlsa93428".clone_into(&mut finding.secret);
         assert_allow(&allowlist, &finding)
     }
 
@@ -219,7 +219,7 @@ mod tests {
         let mut finding = build_empty_finding();
 
         set_regex_expr_to_allowlist(&mut allowlist, "^test-secret$")?;
-        finding.secret = "test-secret".to_owned();
+        "test-secret".clone_into(&mut finding.secret);
         assert_allow(&allowlist, &finding)
     }
 
@@ -229,7 +229,7 @@ mod tests {
         let mut finding = build_empty_finding();
 
         set_regex_expr_to_allowlist(&mut allowlist, "^test$")?;
-        finding.secret = "test-secret".to_owned();
+        "test-secret".clone_into(&mut finding.secret);
         assert_not_allow(&allowlist, &finding)
     }
 
@@ -240,8 +240,8 @@ mod tests {
 
         allowlist.regex_target = Some(RegexTarget::Match);
         set_regex_expr_to_allowlist(&mut allowlist, "^key = test-secret")?;
-        finding.secret = "test-secret".to_owned();
-        finding.matched = "key = test-secret".to_owned();
+        "test-secret".clone_into(&mut finding.secret);
+        "key = test-secret".clone_into(&mut finding.matched);
         assert_allow(&allowlist, &finding)
     }
 
@@ -252,8 +252,8 @@ mod tests {
 
         allowlist.regex_target = Some(RegexTarget::Match);
         set_regex_expr_to_allowlist(&mut allowlist, "^test-secret$")?;
-        finding.secret = "test-secret".to_owned();
-        finding.matched = "key = test-secret".to_owned();
+        "test-secret".clone_into(&mut finding.secret);
+        "key = test-secret".clone_into(&mut finding.matched);
         assert_not_allow(&allowlist, &finding)
     }
 
@@ -264,9 +264,9 @@ mod tests {
 
         allowlist.regex_target = Some(RegexTarget::Line);
         set_regex_expr_to_allowlist(&mut allowlist, "^book_key = test-secret")?;
-        finding.secret = "test-secret".to_owned();
-        finding.matched = "key = test-secret".to_owned();
-        finding.line = "book_key = test-secret # comment".to_owned();
+        "test-secret".clone_into(&mut finding.secret);
+        "key = test-secret".clone_into(&mut finding.matched);
+        "book_key = test-secret # comment".clone_into(&mut finding.line);
         assert_allow(&allowlist, &finding)
     }
 }

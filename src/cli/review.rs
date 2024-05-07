@@ -171,7 +171,7 @@ fn print_confirmed_summary(results: &[FilterResult], out: &mut dyn Write) -> any
     results_by_rule_id_sorted.sort_by_key(|(_, r)| Reverse(r.confirmed));
     for (rule_id, per_result) in &results_by_rule_id_sorted {
         builder.push_record([
-            &rule_id,
+            rule_id,
             &(per_result.confirmed + per_result.allowed).to_string(),
             &per_result.allowed.to_string(),
             &per_result.confirmed.to_string(),

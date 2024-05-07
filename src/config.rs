@@ -203,7 +203,7 @@ mod tests {
     #[test]
     fn test_validate_duplication_ok() {
         let mut allowlist = test::build_empty_allowlist();
-        allowlist.id = "another-allowlist".to_owned();
+        "another-allowlist".clone_into(&mut allowlist.id);
         let allowlists = vec![allowlist, test::build_empty_allowlist()];
         assert!(validate_duplication(&allowlists).is_ok());
     }

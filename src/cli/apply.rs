@@ -31,7 +31,7 @@ pub struct ApplyArgs {
     /// Add extra guide message to GitHub format output.
     #[arg(short, long, env)]
     guide: Option<String>,
-    /// Do not fail if there are confirmed findings. Fail on errors even if no_fail is true.
+    /// Do not fail if there are confirmed findings. Fail on errors even if `no_fail` is true.
     #[arg(short, long, env)]
     no_fail: bool,
 }
