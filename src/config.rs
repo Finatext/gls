@@ -7,7 +7,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use crate::{collect_dir, gitleaks_config::GitleaksAllowlist};
 
 // Allowlist is a list of allow (ignore) rule. Return a list of allowlist here.
-pub fn read_allowlists(path: &Path) -> anyhow::Result<Vec<Allowlist>> {
+pub fn read_allowlists(path: &Path) -> Result<Vec<Allowlist>> {
     let allowlists = if path.is_file() {
         let contents = read_to_string(path)
             .with_context(|| format!("Failed to read allowlist from {}", path.display()))?;
@@ -72,7 +72,7 @@ impl Allowlist {
         other: GitleaksAllowlist,
         id: String,
         target_rule_ids: Vec<String>,
-    ) -> anyhow::Result<Self> {
+    ) -> Result<Self> {
         let regex_target = match other.regex_target {
             Some(e) => Some(e.parse()?),
             None => None,
@@ -149,9 +149,7 @@ fn validate_duplication(allowlists: &[Allowlist]) -> Result<()> {
     Ok(())
 }
 
-fn from_regex_strings(
-    regex_strings: Option<Vec<String>>,
-) -> anyhow::Result<Option<Vec<RegexString>>> {
+fn from_regex_strings(regex_strings: Option<Vec<String>>) -> Result<Option<Vec<RegexString>>> {
     let res = match regex_strings {
         Some(inner) => {
             let rs = inner
@@ -165,7 +163,7 @@ fn from_regex_strings(
 }
 
 #[allow(clippy::needless_pass_by_value)]
-fn collect_regex_string(mut acc: Vec<RegexString>, s: String) -> anyhow::Result<Vec<RegexString>> {
+fn collect_regex_string(mut acc: Vec<RegexString>, s: String) -> Result<Vec<RegexString>> {
     let re = Regex::new(&s)?;
     acc.push(RegexString { regex: re });
     Ok(acc)

@@ -51,7 +51,7 @@ pub fn apply(args: ApplyArgs) -> Result {
 
     let path = resolve_path(args.report_path, &root);
     if path.extension().unwrap_or_default() != "json" {
-        bail!(format!("JSON file extension expected: {}", path.display(),))
+        bail!("JSON file extension expected: {}", path.display(),)
     };
     let report: Report = read_report(&path)?;
     let result = filter.apply_report(report);

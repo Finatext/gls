@@ -86,10 +86,10 @@ pub fn review(args: ReviewArgs) -> Result {
             let report = read_report(&path)?;
             acc.push(report);
         } else {
-            bail!(format!(
+            bail!(
                 "Unkown file extension found: expected=.json, actual={}",
                 path.display(),
-            ));
+            );
         }
         Ok(acc)
     })?;
