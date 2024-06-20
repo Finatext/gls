@@ -142,6 +142,5 @@ jobs:
         git add HomebrewFormula/gls.rb
         git -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
             -c user.name='github-actions[bot]' \
-            -m "Update Homebrew formula" \
-            commit
+            commit -m "Update Homebrew formula"
         git push
