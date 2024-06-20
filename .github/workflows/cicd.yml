@@ -137,7 +137,9 @@ jobs:
       run: |
         .github/scripts/update_formula
     - name: Commit and push changes
+      shell: bash
       run: |
+        set -x
         git diff
         git add HomebrewFormula/gls.rb
         git -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
