@@ -5,6 +5,20 @@ gls (gitleaks-support) enhances the development of gitleaks rules and allowlists
 - Support for multiple global and rule-specific allowlists.
 - Ability to handle multiple configuration files.
 
+## Install
+### Homebrew
+```
+brew tap Finatext/gls https://github.com/Finatext/gls.git
+brew install gls
+```
+
+Note: conflicts with `coreutils` package. Unlink `coreutils` and use the "gnubin" of `coreutils`.
+
+### Cargo
+```
+cargo install --git https://github.com/Finatext/gls.git
+```
+
 ## Design
 
 Instead of using the original gitleaks allowlist feature, gls requires all allowlists to be defined in its own configuration files.
