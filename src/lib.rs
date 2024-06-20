@@ -11,13 +11,16 @@ mod sarif;
 
 pub mod cli;
 
-use std::{fs::read_dir, path};
+use std::{
+    fs::read_dir,
+    path::{Path, PathBuf},
+};
 
-use anyhow::Context as _;
+use anyhow::{Context as _, Result};
 
-fn collect_dir<B, F>(path: &path::Path, mut f: F) -> anyhow::Result<Vec<B>>
+fn collect_dir<B, F>(path: &Path, f: F) -> Result<Vec<B>>
 where
-    F: FnMut(Vec<B>, path::PathBuf) -> anyhow::Result<Vec<B>>,
+    F: Fn(Vec<B>, PathBuf) -> Result<Vec<B>>,
 {
     read_dir(path)
         .with_context(|| format!("Failed to read path: {path:?}"))?

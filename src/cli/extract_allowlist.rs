@@ -26,7 +26,7 @@ pub fn extract_allowlist(args: ExtractAllowlistArgs) -> Result {
     let contents = read_to_string(&args.source)?;
     let config = toml::from_str::<GitleaksConfig>(&contents)?;
 
-    let allowlist = config
+    let global_allowlist = config
         .allowlist
         .map(|a| Allowlist::from_gitleaks(a, GLOBAL_ALLOWLIST_ID.to_owned(), Vec::new()))
         .transpose()?;
@@ -45,7 +45,7 @@ pub fn extract_allowlist(args: ExtractAllowlistArgs) -> Result {
         })
         .transpose()?;
 
-    let allowlists = allowlist
+    let allowlists = global_allowlist
         .into_iter()
         .chain(rule_local_allowlists.into_iter().flatten())
         .collect::<Vec<_>>();

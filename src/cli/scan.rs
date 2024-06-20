@@ -63,9 +63,8 @@ pub fn scan(args: ScanArgs) -> Result {
                 .path();
             let directory_name = path
                 .file_name()
-                .with_context(|| format!("Failed to get filename: {path:?}"))?
-                .to_str()
-                .with_context(|| format!("Failed to convert OS string to str: {path:?}"))?;
+                .and_then(|n| n.to_str())
+                .with_context(|| format!("Failed to get name: {path:?}"))?;
             acc.push(directory_name.to_owned());
             anyhow::Ok(acc)
         })?;
