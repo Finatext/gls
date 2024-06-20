@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'octokit'
 require 'open-uri'
 require 'digest'
 
@@ -10,7 +9,6 @@ LOCAL = ENV.fetch('LOCAL', false)
 
 tag = GITHUB_REF.sub('refs/tags/v', '')
 formula_path = "HomebrewFormula/#{TARGET}.rb"
-repo = "Finatext/#{TARGET}"
 
 content = File.read(formula_path)
 
@@ -33,18 +31,4 @@ urls.each do |url|
   end
 end
 
-if LOCAL
-  File.write(formula_path, updated_content)
-else
-  client = Octokit::Client.new(access_token: ENV.fetch('GITHUB_TOKEN'))
-  formula_file = client.contents(repo, path: formula_path, ref: tag)
-
-  client.update_contents(repo,
-    formula_path,
-    "Update Homebrew formula for #{tag}",
-    formula_file.sha,
-    updated_content,
-    branch: 'main',
-    file: formula_path
-  )
-end
+File.write(formula_path, updated_content)

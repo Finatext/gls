@@ -127,9 +127,6 @@ jobs:
       - build-release
     runs-on: ubuntu-latest
     steps:
-    - name: Install Dependencies
-      shell: bash
-      run: sudo gem install octokit
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Update Homebrew Formula
       env:
@@ -139,3 +136,12 @@ jobs:
       shell: bash
       run: |
         .github/scripts/update_formula
+    - name: Commit and push changes
+      run: |
+        git diff
+        git add HomebrewFormula/gls.rb
+        git -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            -c user.name='github-actions[bot]' \
+            -m "Update Homebrew formula" \
+            commit
+        git push
