@@ -128,7 +128,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Install Dependencies
-      run: gem install octokit
+      shell: bash
+      run: sudo gem install octokit
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Update Homebrew Formula
       env:
