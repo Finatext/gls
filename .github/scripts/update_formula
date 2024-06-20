@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+require 'octokit'
+require 'open-uri'
+require 'digest'
+
+GITHUB_REF = ENV.fetch('GITHUB_REF')
+TARGET = ENV.fetch('TARGET')
+LOCAL = ENV.fetch('LOCAL', false)
+
+tag = GITHUB_REF.sub('refs/tags/v', '')
+formula_path = "HomebrewFormula/#{TARGET}.rb"
+repo = "Finatext/#{TARGET}"
+
+content = File.read(formula_path)
+
+updated_content = content.gsub(/version "[^"]*"/, 'version "' + tag + '"')
+
+updated_content.gsub!(/url "https:\/\/github.com\/[^"]+\/releases\/download\/[^\/]+\/([^"]+)"/) do |url|
+  file_name = $1
+  new_url = "https://github.com/Finatext/gls/releases/download/v#{tag}/#{file_name}"
+  puts "Updating #{url} to #{new_url}"
+  %!url "#{new_url}"!
+end
+
+urls = updated_content.scan(/url "([^"]+)"/).flatten
+urls.each do |url|
+  puts "Updating sha256 for #{url}"
+  file = URI.open(url)
+  sha256 = Digest::SHA256.hexdigest(file.read)
+  updated_content.gsub!(/(url "#{Regexp.escape(url)}"\n\s*sha256 ")[^"]+"/) do |match|
+    "#{$1}#{sha256}\""
+  end
+end
+
+if LOCAL
+  File.write(formula_path, updated_content)
+else
+  client = Octokit::Client.new(access_token: ENV.fetch('GITHUB_TOKEN'))
+  formula_file = client.contents(repo, path: formula_path, ref: tag)
+
+  client.update_contents(repo,
+    formula_path,
+    "Update Homebrew formula for #{tag}",
+    formula_file.sha,
+    updated_content,
+    branch: 'main',
+    file: formula_path
+  )
+end

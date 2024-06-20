@@ -121,3 +121,20 @@ jobs:
         files: |
           ${{ needs.crate-metadata.outputs.name }}-${{ matrix.job.target }}.tar.gz
           ${{ needs.crate-metadata.outputs.name }}-${{ matrix.job.target }}.tar.gz.sha256
+
+  update-homebrew:
+    needs:
+      - build-release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Dependencies
+      run: gem install octokit
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    - name: Update Homebrew Formula
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REF: ${{ github.ref }}
+        TARGET: gls
+      shell: bash
+      run: |
+        .github/scripts/update_formula
