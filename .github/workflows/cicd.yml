@@ -128,6 +128,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      with:
+        ref: main
     - name: Update Homebrew Formula
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -140,9 +142,10 @@ jobs:
       shell: bash
       run: |
         set -x
+        # https://github.com/actions/checkout?tab=readme-ov-file#push-a-commit-using-the-built-in-token
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git diff
         git add HomebrewFormula/gls.rb
-        git -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
-            -c user.name='github-actions[bot]' \
-            commit -m "Update Homebrew formula"
+        git commit -m "Update Homebrew formula"
         git push
