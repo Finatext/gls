@@ -8,7 +8,7 @@ use anyhow::Context;
 use clap::Args;
 use toml_edit::DocumentMut;
 
-use crate::cli::{Result, FAILURE, SUCCESS};
+use crate::cli::{CliResult, FAILURE, SUCCESS};
 
 #[derive(Debug, Args)]
 pub struct CleanupRuleArgs {
@@ -19,7 +19,7 @@ pub struct CleanupRuleArgs {
     rules: Vec<String>,
 }
 
-pub fn cleanup_rule(args: CleanupRuleArgs) -> Result {
+pub fn cleanup_rule(args: CleanupRuleArgs) -> CliResult {
     let targets = args.rules;
     if targets.is_empty() {
         eprintln!("No target rules specified.");

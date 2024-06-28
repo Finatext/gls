@@ -16,13 +16,13 @@ use std::{
 use anyhow::Context as _;
 use clap::{Parser, Subcommand};
 
-type Result = anyhow::Result<ExitCode>;
+type CliResult = anyhow::Result<ExitCode>;
 
-const SUCCESS: Result = Ok(ExitCode::SUCCESS);
+const SUCCESS: CliResult = Ok(ExitCode::SUCCESS);
 // Indicates domain failures, not errors.
-const FAILURE: Result = Ok(ExitCode::FAILURE);
+const FAILURE: CliResult = Ok(ExitCode::FAILURE);
 
-pub fn run() -> Result {
+pub fn run() -> CliResult {
     let cli = Cli::parse();
     match cli.command {
         Commands::Apply(args) => apply::apply(args),
