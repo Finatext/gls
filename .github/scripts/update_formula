@@ -5,7 +5,6 @@ require 'digest'
 
 GITHUB_REF = ENV.fetch('GITHUB_REF')
 TARGET = ENV.fetch('TARGET')
-LOCAL = ENV.fetch('LOCAL', false)
 
 tag = GITHUB_REF.sub('refs/tags/v', '')
 formula_path = "HomebrewFormula/#{TARGET}.rb"
