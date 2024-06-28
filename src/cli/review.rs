@@ -3,19 +3,19 @@ use std::{
     collections::BTreeMap,
     fs::File,
     io::{stdout, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
-use anyhow::bail;
+use anyhow::{bail, Result};
 use clap::{Args, ValueEnum};
 use tabled::{builder::Builder, settings::Style};
 
 use crate::{
-    cli::{resolve_path, resolve_root, Result, SUCCESS},
+    cli::{resolve_path, resolve_root, CliResult, SUCCESS},
     collect_dir,
     config::read_allowlists,
     filter::{FilterResult, FindingFilter},
-    report::{read_report, AllowedFinding},
+    report::{read_report, AllowedFinding, Report},
 };
 
 #[derive(Debug, Args)]
@@ -74,25 +74,18 @@ struct PerRuleResult {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn review(args: ReviewArgs) -> Result {
+pub fn review(args: ReviewArgs) -> CliResult {
     let root = resolve_root(args.root.clone())?;
     let allowlist_path = resolve_path(args.config_path.clone(), &root);
     let allowlists = read_allowlists(&allowlist_path)?;
     let filter = FindingFilter::new(&allowlists);
 
     let reports_path = resolve_path(args.reports_dir_path.clone(), &root);
-    let reports = collect_dir(&reports_path, |mut acc, path| {
-        if path.extension().unwrap_or_default() == "json" {
-            let report = read_report(&path)?;
-            acc.push(report);
-        } else {
-            bail!(
-                "Unkown file extension found: expected=.json, actual={}",
-                path.display(),
-            );
-        }
-        Ok(acc)
-    })?;
+    let reports = if reports_path.is_dir() {
+        read_reports(&reports_path)?
+    } else {
+        vec![read_report(&reports_path)?]
+    };
     let results = reports
         .into_iter()
         .map(|report| filter.apply_report(report))
@@ -110,6 +103,21 @@ pub fn review(args: ReviewArgs) -> Result {
     }
 
     SUCCESS
+}
+
+fn read_reports(reports_path: &Path) -> Result<Vec<Report>> {
+    collect_dir(reports_path, |mut acc, path| {
+        if path.extension().unwrap_or_default() == "json" {
+            let report = read_report(&path)?;
+            acc.push(report);
+        } else {
+            bail!(
+                "Unkown file extension found: expected=.json, actual={}",
+                path.display(),
+            );
+        }
+        Ok(acc)
+    })
 }
 
 fn print_summary(

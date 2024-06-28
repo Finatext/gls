@@ -7,7 +7,7 @@ use std::{
 use clap::Args;
 
 use crate::{
-    cli::{Result, SUCCESS},
+    cli::{CliResult, SUCCESS},
     config::{Allowlist, ConfigRoot},
     gitleaks_config::GitleaksConfig,
 };
@@ -22,7 +22,7 @@ pub struct ExtractAllowlistArgs {
 
 const GLOBAL_ALLOWLIST_ID: &str = "gitleaks-global-allowlist";
 
-pub fn extract_allowlist(args: ExtractAllowlistArgs) -> Result {
+pub fn extract_allowlist(args: ExtractAllowlistArgs) -> CliResult {
     let contents = read_to_string(&args.source)?;
     let config = toml::from_str::<GitleaksConfig>(&contents)?;
 

@@ -10,7 +10,7 @@ use clap::Args;
 use rayon::{prelude::*, ThreadPoolBuilder};
 use serde::{Deserialize, Serialize};
 
-use crate::cli::{resolve_path, resolve_root, Result, SUCCESS};
+use crate::cli::{resolve_path, resolve_root, CliResult, SUCCESS};
 
 /// Scan repositories for secrets using gitleaks.
 #[derive(Debug, Args)]
@@ -42,7 +42,7 @@ struct Repo {
     pushed_at: DateTime<Utc>,
 }
 
-pub fn scan(args: ScanArgs) -> Result {
+pub fn scan(args: ScanArgs) -> CliResult {
     let root = resolve_root(None)?;
     let gitleaks_path = args.gitleaks_path;
     let repos_path = resolve_path(args.repos_path, &root);

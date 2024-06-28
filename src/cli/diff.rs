@@ -9,7 +9,7 @@ use clap::{Args, ValueEnum};
 use tabled::{builder::Builder, settings::Style};
 
 use crate::{
-    cli::{resolve_path, resolve_root, Result, SUCCESS},
+    cli::{resolve_path, resolve_root, CliResult, SUCCESS},
     diff::{compute_diff, DiffResult},
     filter::FilterResult,
 };
@@ -47,7 +47,7 @@ struct PathInfo<'path> {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-pub fn diff(args: DiffArgs) -> Result {
+pub fn diff(args: DiffArgs) -> CliResult {
     let root = resolve_root(args.root.clone())?;
     let before_path = resolve_path(args.before.clone(), &root);
     let before_contents =

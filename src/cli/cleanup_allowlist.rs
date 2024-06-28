@@ -8,7 +8,7 @@ use anyhow::Context;
 use clap::Args;
 use toml_edit::DocumentMut;
 
-use crate::cli::{Result, SUCCESS};
+use crate::cli::{CliResult, SUCCESS};
 
 #[derive(Debug, Args)]
 pub struct CleanupAllowlistArgs {
@@ -18,7 +18,7 @@ pub struct CleanupAllowlistArgs {
     output: Option<PathBuf>,
 }
 
-pub fn cleanup_allowlist(args: CleanupAllowlistArgs) -> Result {
+pub fn cleanup_allowlist(args: CleanupAllowlistArgs) -> CliResult {
     let contents = read_to_string(&args.source)?;
     let mut doc = contents.parse::<DocumentMut>()?;
     doc.remove("allowlist");

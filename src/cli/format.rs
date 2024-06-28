@@ -7,7 +7,7 @@ use std::{
 use clap::Args;
 
 use crate::{
-    cli::{Result, SUCCESS},
+    cli::{CliResult, SUCCESS},
     config::ConfigRoot,
 };
 
@@ -19,7 +19,7 @@ pub struct FormatArgs {
     output: Option<PathBuf>,
 }
 
-pub fn format(args: FormatArgs) -> Result {
+pub fn format(args: FormatArgs) -> CliResult {
     let contents = read_to_string(args.source)?;
     let config: ConfigRoot = toml::from_str(&contents)?;
     let mut out: Box<dyn Write> = match args.output {

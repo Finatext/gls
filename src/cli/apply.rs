@@ -8,7 +8,7 @@ use anyhow::{bail, Context as _};
 use clap::{Args, ValueEnum};
 
 use crate::{
-    cli::{resolve_path, resolve_root, Result, FAILURE, SUCCESS},
+    cli::{resolve_path, resolve_root, CliResult, FAILURE, SUCCESS},
     config::read_allowlists,
     filter::FindingFilter,
     report::{read_report, FindingWithoutLine, Report},
@@ -43,7 +43,7 @@ enum Format {
     Sarif,
 }
 
-pub fn apply(args: ApplyArgs) -> Result {
+pub fn apply(args: ApplyArgs) -> CliResult {
     let root = resolve_root(args.root)?;
     let allowlist_path = resolve_path(args.config_path, &root);
     let allowlists = read_allowlists(&allowlist_path)?;
