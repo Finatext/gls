@@ -26,7 +26,7 @@ jobs:
     name: Run CI tasks
     runs-on: ubuntu-20.04
     steps:
-      - uses: dtolnay/rust-toolchain@d8352f6b1d2e870bc5716e7a6d9b65c4cc244a1a # No semver tag.
+      - uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17 # No semver tag.
         with:
           toolchain: stable
           components: rustfmt,clippy
@@ -89,11 +89,11 @@ jobs:
         - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest }
         - { target: x86_64-unknown-linux-musl, os: ubuntu-latest }
     steps:
-    - uses: dtolnay/rust-toolchain@d8352f6b1d2e870bc5716e7a6d9b65c4cc244a1a
+    - uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17
       with:
         toolchain: stable
         targets: ${{ matrix.job.target }}
-    - uses: taiki-e/install-action@51b8ba088c63d8750c618764ff2030742da0ec19 # v2.33.35
+    - uses: taiki-e/install-action@331a600f1b10a3fed8dc56f925012bede91ae51f # v2.41.7
       if: matrix.job.cross == true
       with:
         tool: cross
@@ -116,7 +116,7 @@ jobs:
       run: |
         sha256sum ${{ needs.crate-metadata.outputs.name }}-${{ matrix.job.target }}.tar.gz > ${{ needs.crate-metadata.outputs.name }}-${{ matrix.job.target }}.tar.gz.sha256
     - name: Upload release binary
-      uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
+      uses: softprops/action-gh-release@a74c6b72af54cfa997e81df42d94703d6313a2d0 # v2.0.6
       with:
         files: |
           ${{ needs.crate-metadata.outputs.name }}-${{ matrix.job.target }}.tar.gz
