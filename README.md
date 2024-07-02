@@ -58,5 +58,5 @@ To filter the results from `gitleaks detect`:
 1. Git commit-push then create a PR and merge
 1. Create a git tag with `git tag "$(cargo metadata --no-deps --format-version 1 | jq -r '"v" + .packages[0].version')"`
 1. Push the git tag and wait the CI creates a GitHub Release and upload artifacts
-1. Run `.github/scripts/update_formula` to update Homebrew formula file
+1. Run `GITHUB_REF="refs/tags/$(cargo metadata --no-deps --format-version 1 | jq -r '"v" + .packages[0].version')" TARGET=gls .github/scripts/update_formula` to update Homebrew formula file
 1. Create a PR and merge
