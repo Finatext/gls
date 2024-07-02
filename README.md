@@ -51,3 +51,12 @@ For ongoing configuration development in day-to-day operations, gls also offers:
 To filter the results from `gitleaks detect`:
 
 - `apply`: Takes gls configuration files and a gitleaks detection result JSON file, and outputs the actual confirmed findings.
+
+## Development
+### Release
+1. Update version of `Cargo.toml` and re-generate lock file
+1. Git commit-push then create a PR and merge
+1. Create a git tag with `git tag "$(cargo metadata --no-deps --format-version 1 | jq -r '"v" + .packages[0].version')"`
+1. Push the git tag and wait the CI creates a GitHub Release and upload artifacts
+1. Run `.github/scripts/update_formula` to update Homebrew formula file
+1. Create a PR adn merge
