@@ -114,8 +114,8 @@ fn to_result(finding: Finding, guide: &str) -> SarifResult {
     SarifResult {
         message: Message {
             text: format!(
-                "`{}` rule finds possible secret: {}{guide}",
-                finding.rule_id, finding.secret
+                "`{}` rule finds possible secret in {}: `{}`{guide}",
+                finding.rule_id, finding.commit, finding.secret
             ),
         },
         rule_id: finding.rule_id,
