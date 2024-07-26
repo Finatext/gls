@@ -341,7 +341,7 @@ checksum = "6fb8d784f27acf97159b40fc4db5ecd8aa23b9ad5ef69cdd136d3bc80665f0c0"
 
 [[package]]
 name = "gls"
-version = "0.1.17"
+version = "0.1.18"
 dependencies = [
  "anyhow",
  "assert_cmd",
