@@ -24,7 +24,7 @@ jobs:
           # Generate `gitleaks` binary
           tar --extract --gzip --file "gitleaks_${VERSION}_${TARGET}.tar.gz" --verbose
           sudo install gitleaks /usr/local/bin/gitleaks
-      - uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17 # No semver tag.
+      - uses: dtolnay/rust-toolchain@7b1c307e0dcbda6122208f10795a713336a9b35a # No semver tag.
         with:
           toolchain: stable
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
