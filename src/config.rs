@@ -35,7 +35,7 @@ pub struct ConfigRoot {
 }
 
 impl ConfigRoot {
-    pub fn new(allowlists: Vec<Allowlist>) -> Self {
+    pub const fn new(allowlists: Vec<Allowlist>) -> Self {
         Self {
             extensions: Extensions { allowlists },
         }
