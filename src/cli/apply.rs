@@ -58,9 +58,9 @@ pub fn apply(args: ApplyArgs) -> CliResult {
 
     // Bind for later use.
     let confirmed_count = result.confirmed.len();
-    let mut out: Box<dyn Write> = match &args.output {
-        Some(path) => Box::new(File::create(path)?),
-        None => Box::new(stdout()),
+    let mut out: &mut dyn Write = match &args.output {
+        Some(path) => &mut File::create(path)?,
+        None => &mut stdout(),
     };
     let msg_f = || {
         let out_description = args

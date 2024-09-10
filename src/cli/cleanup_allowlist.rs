@@ -35,9 +35,9 @@ pub fn cleanup_allowlist(args: CleanupAllowlistArgs) -> CliResult {
         .for_each(|rule| {
             rule.remove("allowlist");
         });
-    let mut out: Box<dyn Write> = match args.output {
-        Some(path) => Box::new(File::create(path)?),
-        None => Box::new(stdout()),
+    let mut out: &mut dyn Write = match args.output {
+        Some(path) => &mut File::create(path)?,
+        None => &mut stdout(),
     };
     write!(&mut out, "{doc}")?;
     SUCCESS
