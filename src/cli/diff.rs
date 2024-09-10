@@ -62,9 +62,9 @@ pub fn diff(args: DiffArgs) -> CliResult {
         .with_context(|| format!("Failed to parse JSON: {}", after_path.display()))?;
 
     let diffs = compute_diff(befores, afters);
-    let mut out: Box<dyn Write> = match args.output.clone() {
-        Some(path) => Box::new(File::create(path)?),
-        None => Box::new(stdout()),
+    let mut out: &mut dyn Write = match args.output.clone() {
+        Some(path) => &mut File::create(path)?,
+        None => &mut stdout(),
     };
 
     match args.format {

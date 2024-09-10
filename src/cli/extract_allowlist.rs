@@ -1,6 +1,6 @@
 use std::{
     fs::{self, read_to_string},
-    io,
+    io::{self, Write},
     path::PathBuf,
 };
 
@@ -51,9 +51,9 @@ pub fn extract_allowlist(args: ExtractAllowlistArgs) -> CliResult {
         .collect::<Vec<_>>();
     let config = ConfigRoot::new(allowlists);
 
-    let mut out: Box<dyn io::Write> = match args.output {
-        Some(path) => Box::new(fs::File::create(path)?),
-        None => Box::new(io::stdout()),
+    let mut out: &mut dyn Write = match args.output {
+        Some(path) => &mut fs::File::create(path)?,
+        None => &mut io::stdout(),
     };
     write!(&mut out, "{}", toml::to_string(&config)?)?;
     SUCCESS

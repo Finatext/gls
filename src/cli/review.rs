@@ -91,9 +91,9 @@ pub fn review(args: ReviewArgs) -> CliResult {
         .map(|report| filter.apply_report(report))
         .collect::<Vec<FilterResult>>();
 
-    let mut out: Box<dyn Write> = match args.output.as_ref() {
-        Some(path) => Box::new(File::create(path)?),
-        None => Box::new(stdout()),
+    let mut out: &mut dyn Write = match args.output.as_ref() {
+        Some(path) => &mut File::create(path)?,
+        None => &mut stdout(),
     };
     match args.mode {
         Mode::Summary => print_summary(&results, &filter, &mut out)?,
