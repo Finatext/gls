@@ -1,5 +1,5 @@
 use std::{
-    fs::{create_dir_all, read_dir},
+    fs::{self, create_dir_all, read_dir},
     path::PathBuf,
     process::{Command, Stdio},
 };
@@ -9,6 +9,7 @@ use chrono::{DateTime, Utc};
 use clap::Args;
 use rayon::{prelude::*, ThreadPoolBuilder};
 use serde::{Deserialize, Serialize};
+use tempfile::tempdir;
 
 use crate::cli::{resolve_path, resolve_root, CliResult, SUCCESS};
 
@@ -42,6 +43,9 @@ struct Repo {
     pushed_at: DateTime<Utc>,
 }
 
+// read string from dev/jsonextra.json.tmpl
+const TEMPLATE: &str = include_str!("../data/jsonextra.json.tmpl");
+
 pub fn scan(args: ScanArgs) -> CliResult {
     let root = resolve_root(None)?;
     let gitleaks_path = args.gitleaks_path;
@@ -54,6 +58,10 @@ pub fn scan(args: ScanArgs) -> CliResult {
             .build_global()?;
     }
     create_dir_all(&output_path)?;
+
+    let template_dir = tempdir()?;
+    let template_path = template_dir.path().join("jsonextra.json.tmpl");
+    fs::write(&template_path, TEMPLATE)?;
 
     let mut dirs: Vec<_> = read_dir(&repos_path)
         .with_context(|| format!("Failed to read dir: {repos_path:?}"))?
@@ -80,13 +88,14 @@ pub fn scan(args: ScanArgs) -> CliResult {
         let report_path = output_path.join(format!("{directory_name}.json"));
         let mut command = Command::new(&gitleaks_path);
         command
-            .arg("detect")
-            .arg("--report-format=json")
+            .arg("git")
+            .arg("--report-format=template")
+            .arg(format!("--report-template={}", template_path.display()))
             .arg("--no-banner")
             .arg("--exit-code=0") // Don't fail on leaks, we just need reports.
-            .arg(format!("--source={}", source_path.display()))
             .arg(format!("--config={}", config_path.display()))
             .arg(format!("--report-path={}", report_path.display()))
+            .arg(&source_path)
             .stdin(Stdio::null());
 
         println!("{directory_name}: start scanning");

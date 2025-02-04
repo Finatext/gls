@@ -7,27 +7,11 @@ jobs:
     name: Test GitHub annotation
     runs-on: ubuntu-latest
     steps:
-      - name: Setup gitleaks
-        env:
-          TARGET: linux_amd64
-          VERSION: 8.18.1-patch1
-          # From https://github.com/taiki45/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_checksums.txt
-          SHA256_SUM: aed536718ac444b6727754ca2e34e243ec1aee8bce928975233709d57bc61387
-        # Explicitly specifing `bash` changes behavior: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell
-        shell: bash
-        run: |
-          set -x
-          curl --silent --show-error --fail --connect-timeout 3 --max-time 10 --retry 3 \
-            --location --remote-name \
-            "https://github.com/taiki45/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_${TARGET}.tar.gz"
-          echo "${SHA256_SUM} gitleaks_${VERSION}_${TARGET}.tar.gz" | sha256sum --check
-          # Generate `gitleaks` binary
-          tar --extract --gzip --file "gitleaks_${VERSION}_${TARGET}.tar.gz" --verbose
-          sudo install gitleaks /usr/local/bin/gitleaks
       - uses: dtolnay/rust-toolchain@c5a29ddb4d9d194e7c84ec8c3fba61b1c31fee8c # No semver tag.
         with:
           toolchain: stable
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: ./.github/actions/setup_gitleaks
       - uses: reviewdog/action-setup@3f401fe1d58fe77e10d665ab713057375e39b887 # v1.3.0
         with:
           reviewdog_version: latest
@@ -40,6 +24,8 @@ jobs:
         run: |
           set -x
           mkdir -p tmp
-          gitleaks detect --verbose --exit-code=0 --no-banner --config=tests/testdata/scan_config.toml --report-path="${REPORT_PATH}"
+          gitleaks detect --verbose --exit-code=0 --no-banner \
+            --report-format template --report-template dev/jsonextra.json.tmpl \
+            --config=tests/testdata/scan_config.toml --report-path="${REPORT_PATH}"
           cargo run apply --no-fail --format=sarif --config-path=tests/testdata/empty_allowlist.toml | \
             reviewdog -f=sarif -reporter=github-pr-check -level=warning -name=gls

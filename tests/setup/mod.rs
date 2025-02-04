@@ -7,6 +7,7 @@ use std::{
 };
 
 use anyhow::{bail, Context, Result};
+use semver::Version;
 use tempfile::{tempdir, TempDir};
 
 struct Git<'path> {
@@ -43,10 +44,12 @@ pub fn check_gitleaks() -> Result<()> {
 
     let mut cmd = Command::new("gitleaks");
     cmd.arg("version");
-    let res = cmd.output()?;
-    let version = String::from_utf8_lossy(&res.stdout);
-    if !version.contains("-patch") {
-        bail!("gitleaks version is not patched. Please install patched version gitleaks. See .github/workflows/cicd.yml to setup.")
+    let output = cmd.output()?;
+    let version_string = String::from_utf8_lossy(&output.stdout);
+    let version = Version::parse(version_string.trim())?;
+    let expected = Version::parse("8.21.3")?;
+    if version < expected {
+        bail!("gitleaks is too old. Please install latest gitleaks. See .github/workflows/cicd.yml to setup: detected={}, expected={}", version, expected);
     }
     Ok(())
 }
