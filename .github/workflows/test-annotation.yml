@@ -40,6 +40,8 @@ jobs:
         run: |
           set -x
           mkdir -p tmp
-          gitleaks detect --verbose --exit-code=0 --no-banner --config=tests/testdata/scan_config.toml --report-path="${REPORT_PATH}"
+          gitleaks detect --verbose --exit-code=0 --no-banner \
+            --report-format template --report-template dev/jsonextra.json.tmpl \
+            --config=tests/testdata/scan_config.toml --report-path="${REPORT_PATH}"
           cargo run apply --no-fail --format=sarif --config-path=tests/testdata/empty_allowlist.toml | \
             reviewdog -f=sarif -reporter=github-pr-check -level=warning -name=gls
