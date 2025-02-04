@@ -5,6 +5,9 @@ gls (gitleaks-support) enhances the development of gitleaks rules and allowlists
 - Support for multiple global and rule-specific allowlists.
 - Ability to handle multiple configuration files.
 
+## Gitleaks Version
+gls requires gitleaks (>= v8.21.3).
+
 ## Install
 ### Homebrew
 ```
