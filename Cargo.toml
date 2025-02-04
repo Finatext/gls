@@ -1,7 +1,7 @@
 [package]
 name = "gls"
 description = "Support gitleaks config development and extend some gitleaks features."
-version = "0.1.18"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.70.0"
 readme = "README.md"
