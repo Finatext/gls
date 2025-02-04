@@ -4,13 +4,13 @@
 class Gls < Formula
   desc "Support gitleaks config development and extend some gitleaks features"
   homepage "https://github.com/Finatext/gls"
-  version "0.1.18"
+  version "0.2.0"
   license "MIT"
 
   on_macos do
     on_arm do
-      url "https://github.com/Finatext/gls/releases/download/v0.1.18/gls-aarch64-apple-darwin.tar.gz"
-      sha256 "61a7dcc97d747994e18e1d2bbaa64ca3bca84a5cfbb149efd956c69ecce57704"
+      url "https://github.com/Finatext/gls/releases/download/v0.2.0/gls-aarch64-apple-darwin.tar.gz"
+      sha256 "9cffb3e4a439c5738200655dc210640b3bb5d4d0bffbd2fa1f20744e48eebe91"
 
       def install
         bin.install "gls"
@@ -18,8 +18,8 @@ class Gls < Formula
     end
 
     on_intel do
-      url "https://github.com/Finatext/gls/releases/download/v0.1.18/gls-x86_64-apple-darwin.tar.gz"
-      sha256 "b4150f6119df445ed1d5c888455f2293564d53957e69ad4e98290ca07a47a0b3"
+      url "https://github.com/Finatext/gls/releases/download/v0.2.0/gls-x86_64-apple-darwin.tar.gz"
+      sha256 "6cbc3b9e3c1c107d3e69e7ac2604a66bb4f59e2496270bef17cae9b83eda157a"
 
       def install
         bin.install "gls"
@@ -29,8 +29,8 @@ class Gls < Formula
 
   on_linux do
     on_intel do
-      url "https://github.com/Finatext/gls/releases/download/v0.1.18/gls-x86_64-unknown-linux-gnu.tar.gz"
-      sha256 "622af4f7ccbbe05a9fd9962db423cb9c120c4527ea2fe32a615080bbbf73fb55"
+      url "https://github.com/Finatext/gls/releases/download/v0.2.0/gls-x86_64-unknown-linux-gnu.tar.gz"
+      sha256 "3df135901236f631b206fef16c995a2cbf394c717b9da4211a962dba78c72d6e"
 
       def install
         bin.install "gls"
@@ -38,8 +38,8 @@ class Gls < Formula
     end
 
     on_arm do
-      url "https://github.com/Finatext/gls/releases/download/v0.1.18/gls-aarch64-unknown-linux-gnu.tar.gz"
-      sha256 "849e78f717008925b470dc2eee3d975d1610a94fbc80f4ce9f78b2fec7371706"
+      url "https://github.com/Finatext/gls/releases/download/v0.2.0/gls-aarch64-unknown-linux-gnu.tar.gz"
+      sha256 "b0bcde27396803b0fe6ade795a91e4ee436dea48c26d6d8c5ca0d758af54d339"
 
       def install
         bin.install "gls"
