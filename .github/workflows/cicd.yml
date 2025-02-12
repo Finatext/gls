@@ -24,7 +24,7 @@ jobs:
   ci:
     if: github.event.pull_request.draft == false
     name: Run CI tasks
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: dtolnay/rust-toolchain@c5a29ddb4d9d194e7c84ec8c3fba61b1c31fee8c # No semver tag.
         with:
