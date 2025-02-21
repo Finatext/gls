@@ -4,14 +4,14 @@ use std::{
     process::{Command, Stdio},
 };
 
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use chrono::{DateTime, Utc};
 use clap::Args;
-use rayon::{prelude::*, ThreadPoolBuilder};
+use rayon::{ThreadPoolBuilder, prelude::*};
 use serde::{Deserialize, Serialize};
 use tempfile::tempdir;
 
-use crate::cli::{resolve_path, resolve_root, CliResult, SUCCESS};
+use crate::cli::{CliResult, SUCCESS, resolve_path, resolve_root};
 
 /// Scan repositories for secrets using gitleaks.
 #[derive(Debug, Args)]

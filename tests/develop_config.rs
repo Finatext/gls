@@ -5,15 +5,15 @@ mod setup;
 mod develop_config {
     use std::{
         fs::read_to_string,
-        io::{stderr, stdout, Write},
+        io::{Write, stderr, stdout},
         path::Path,
         process::{Command, Output},
     };
 
-    use anyhow::{bail, Context, Result};
+    use anyhow::{Context, Result, bail};
     use assert_cmd::prelude::*;
     use indoc::indoc;
-    use serde_json::{from_str, Value};
+    use serde_json::{Value, from_str};
     use tempfile::tempdir;
 
     use crate::{

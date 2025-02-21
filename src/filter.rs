@@ -122,7 +122,7 @@ fn apply_allowlist(allowlist: &Allowlist, finding: &Finding) -> bool {
 mod tests {
     use super::*;
     use crate::{
-        config::{test::build_empty_allowlist, RegexString},
+        config::{RegexString, test::build_empty_allowlist},
         report::test::build_empty_finding,
     };
 

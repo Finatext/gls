@@ -1,17 +1,17 @@
 use std::{
     fs::File,
-    io::{stdout, Write},
+    io::{Write, stdout},
     path::PathBuf,
 };
 
-use anyhow::{bail, Context as _};
+use anyhow::{Context as _, bail};
 use clap::{Args, ValueEnum};
 
 use crate::{
-    cli::{resolve_path, resolve_root, CliResult, FAILURE, SUCCESS},
+    cli::{CliResult, FAILURE, SUCCESS, resolve_path, resolve_root},
     config::read_allowlists,
     filter::FindingFilter,
-    report::{read_report, FindingWithoutLine, Report},
+    report::{FindingWithoutLine, Report, read_report},
     sarif::to_sarif,
 };
 
@@ -113,9 +113,5 @@ pub fn apply(args: ApplyArgs) -> CliResult {
     }
 
     eprintln!("{confirmed_count} findings are confirmed.");
-    if args.no_fail {
-        SUCCESS
-    } else {
-        FAILURE
-    }
+    if args.no_fail { SUCCESS } else { FAILURE }
 }

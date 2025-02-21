@@ -2,20 +2,20 @@ use std::{
     cmp::Reverse,
     collections::BTreeMap,
     fs::File,
-    io::{stdout, Write},
+    io::{Write, stdout},
     path::{Path, PathBuf},
 };
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::{Args, ValueEnum};
 use tabled::{builder::Builder, settings::Style};
 
 use crate::{
-    cli::{resolve_path, resolve_root, CliResult, SUCCESS},
+    cli::{CliResult, SUCCESS, resolve_path, resolve_root},
     collect_dir,
     config::read_allowlists,
     filter::{FilterResult, FindingFilter},
-    report::{read_report, AllowedFinding, Report},
+    report::{AllowedFinding, Report, read_report},
 };
 
 #[derive(Debug, Args)]

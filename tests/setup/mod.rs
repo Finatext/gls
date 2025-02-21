@@ -1,14 +1,14 @@
 use std::{
     env,
-    fs::{create_dir_all, File},
+    fs::{File, create_dir_all},
     io::Write,
     path::Path,
     process::{Command, Stdio},
 };
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use semver::Version;
-use tempfile::{tempdir, TempDir};
+use tempfile::{TempDir, tempdir};
 
 struct Git<'path> {
     cwd: &'path Path,
@@ -39,7 +39,9 @@ pub fn check_gitleaks() -> Result<()> {
     let res = cmd.status();
     match res {
         Ok(status) if status.success() => (),
-        _ => bail!("gitleaks not found in PATH. Please install patched version gitleaks. See .github/workflows/cicd.yml to setup."),
+        _ => bail!(
+            "gitleaks not found in PATH. Please install patched version gitleaks. See .github/workflows/cicd.yml to setup."
+        ),
     };
 
     let mut cmd = Command::new("gitleaks");
@@ -49,7 +51,11 @@ pub fn check_gitleaks() -> Result<()> {
     let version = Version::parse(version_string.trim())?;
     let expected = Version::parse("8.21.3")?;
     if version < expected {
-        bail!("gitleaks is too old. Please install latest gitleaks. See .github/workflows/cicd.yml to setup: detected={}, expected={}", version, expected);
+        bail!(
+            "gitleaks is too old. Please install latest gitleaks. See .github/workflows/cicd.yml to setup: detected={}, expected={}",
+            version,
+            expected
+        );
     }
     Ok(())
 }

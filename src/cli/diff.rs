@@ -1,6 +1,6 @@
 use std::{
-    fs::{read_to_string, File},
-    io::{stdout, Write},
+    fs::{File, read_to_string},
+    io::{Write, stdout},
     path::{Path, PathBuf},
 };
 
@@ -9,8 +9,8 @@ use clap::{Args, ValueEnum};
 use tabled::{builder::Builder, settings::Style};
 
 use crate::{
-    cli::{resolve_path, resolve_root, CliResult, SUCCESS},
-    diff::{compute_diff, DiffResult},
+    cli::{CliResult, SUCCESS, resolve_path, resolve_root},
+    diff::{DiffResult, compute_diff},
     filter::FilterResult,
 };
 

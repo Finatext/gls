@@ -6,15 +6,15 @@ mod detect {
     use std::{
         collections::HashSet,
         fs::read_to_string,
-        io::{stderr, stdout, Write as _},
+        io::{Write as _, stderr, stdout},
         path::Path,
         process::{Command, Output},
     };
 
-    use anyhow::{bail, Context as _, Result};
+    use anyhow::{Context as _, Result, bail};
     use assert_cmd::cargo::CommandCargoExt as _;
     use indoc::indoc;
-    use serde_json::{from_slice, Value};
+    use serde_json::{Value, from_slice};
     use tempfile::tempdir;
 
     use crate::{
