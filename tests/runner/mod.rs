@@ -1,12 +1,12 @@
 #![allow(clippy::unwrap_used)]
 
 use std::{
-    io::{stderr, stdout, Write as _},
+    io::{Write as _, stderr, stdout},
     path::Path,
     process::Command,
 };
 
-use anyhow::{bail, Context as _, Result};
+use anyhow::{Context as _, Result, bail};
 use assert_cmd::cargo::CommandCargoExt as _;
 
 pub fn run_scan(repos_path: &Path, out_path: &Path) -> Result<()> {

@@ -1,6 +1,6 @@
 use std::{collections::HashSet, fs::read_to_string, path::Path, str::FromStr};
 
-use anyhow::{bail, Context as _, Result};
+use anyhow::{Context as _, Result, bail};
 use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
