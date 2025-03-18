@@ -4,6 +4,7 @@ on: pull_request
 
 jobs:
   test-github-annotation:
+    timeout-minutes: 5
     name: Test GitHub annotation
     runs-on: ubuntu-latest
     steps:
