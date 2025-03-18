@@ -2,6 +2,7 @@ name: clippy-action
 on: [pull_request]
 jobs:
   clippy:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     permissions:
       contents: read

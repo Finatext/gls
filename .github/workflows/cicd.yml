@@ -22,6 +22,7 @@ env:
 
 jobs:
   ci:
+    timeout-minutes: 10
     if: github.event.pull_request.draft == false
     name: Run CI tasks
     runs-on: ubuntu-latest
@@ -44,6 +45,7 @@ jobs:
         run: cargo test --locked --verbose --all-targets --all-features
 
   crate-metadata:
+    timeout-minutes: 1
     if: startsWith(github.ref, 'refs/tags/v')
     name: Extract crate metadata
     runs-on: ubuntu-latest
@@ -67,6 +69,7 @@ jobs:
       msrv: ${{ steps.crate-metadata.outputs.msrv }}
 
   build-release:
+    timeout-minutes: 10
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
       - ci
