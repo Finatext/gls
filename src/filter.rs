@@ -94,7 +94,11 @@ fn apply_allowlist(allowlist: &Allowlist, finding: &Finding) -> bool {
     }
 
     if let Some(stop_words) = &allowlist.stopwords {
-        if !stop_words.is_empty() && stop_words.iter().any(|word| finding.secret.contains(word)) {
+        if !stop_words.is_empty()
+            && stop_words
+                .iter()
+                .any(|word| finding.secret.to_lowercase().contains(word))
+        {
             return true;
         }
     }
@@ -195,7 +199,7 @@ mod tests {
         let mut finding = build_empty_finding();
 
         allowlist.stopwords = Some(vec!["dev".to_owned()]);
-        "334-dev-kjdlsa93428".clone_into(&mut finding.secret);
+        "334-Dev-kjdlsa93428".clone_into(&mut finding.secret);
         assert_allow(&allowlist, &finding)
     }
 
