@@ -39,7 +39,7 @@ pub fn extract_allowlist(args: ExtractAllowlistArgs) -> CliResult {
                     let id = format!("gitleaks-{}", rule.id);
                     let a = Allowlist::from_gitleaks(allowlist, id, vec![rule.id.clone()])?;
                     acc.push(a);
-                };
+                }
                 anyhow::Ok(acc)
             })
         })
