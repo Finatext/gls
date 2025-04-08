@@ -42,7 +42,7 @@ pub fn check_gitleaks() -> Result<()> {
         _ => bail!(
             "gitleaks not found in PATH. Please install patched version gitleaks. See .github/workflows/cicd.yml to setup."
         ),
-    };
+    }
 
     let mut cmd = Command::new("gitleaks");
     cmd.arg("version");
