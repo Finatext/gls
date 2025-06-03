@@ -13,7 +13,7 @@ pub struct FilterResult {
 }
 
 impl FilterResult {
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.confirmed.is_empty() && self.allowed.is_empty()
     }
 }
@@ -29,7 +29,7 @@ impl<'vec> FindingFilter<'vec> {
         }
     }
 
-    pub fn allowlists_size(&self) -> usize {
+    pub const fn allowlists_size(&self) -> usize {
         self.allowlist_list.len()
     }
 
