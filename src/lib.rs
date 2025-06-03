@@ -23,7 +23,7 @@ where
     F: Fn(Vec<B>, PathBuf) -> Result<Vec<B>>,
 {
     read_dir(path)
-        .with_context(|| format!("Failed to read path: {path:?}"))?
+        .with_context(|| format!("Failed to read path: {}", path.display()))?
         .try_fold(Vec::new(), |acc, entry| {
             let entry =
                 entry.with_context(|| format!("Failed to read dir entry in {}", path.display()))?;

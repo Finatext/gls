@@ -64,15 +64,15 @@ pub fn scan(args: ScanArgs) -> CliResult {
     fs::write(&template_path, TEMPLATE)?;
 
     let mut dirs: Vec<_> = read_dir(&repos_path)
-        .with_context(|| format!("Failed to read dir: {repos_path:?}"))?
+        .with_context(|| format!("Failed to read dir: {}", repos_path.display()))?
         .try_fold(Vec::new(), |mut acc, entry| {
             let path = entry
-                .with_context(|| format!("Failed to read dir entry in {repos_path:?}"))?
+                .with_context(|| format!("Failed to read dir entry in {}", repos_path.display()))?
                 .path();
             let directory_name = path
                 .file_name()
                 .and_then(|n| n.to_str())
-                .with_context(|| format!("Failed to get name: {path:?}"))?;
+                .with_context(|| format!("Failed to get name: {}", path.display()))?;
             acc.push(directory_name.to_owned());
             anyhow::Ok(acc)
         })?;

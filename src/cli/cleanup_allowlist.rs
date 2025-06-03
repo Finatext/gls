@@ -28,7 +28,7 @@ pub fn cleanup_allowlist(args: CleanupAllowlistArgs) -> CliResult {
         .with_context(|| {
             format!(
                 "Failed to get `.rules` entries in TOML document: {:?}",
-                args.source
+                args.source.display()
             )
         })?
         .iter_mut()

@@ -50,14 +50,14 @@ struct PathInfo<'path> {
 pub fn diff(args: DiffArgs) -> CliResult {
     let root = resolve_root(args.root.clone())?;
     let before_path = resolve_path(args.before.clone(), &root);
-    let before_contents =
-        read_to_string(&before_path).with_context(|| format!("Faild to read {before_path:?}"))?;
+    let before_contents = read_to_string(&before_path)
+        .with_context(|| format!("Faild to read {}", before_path.display()))?;
     let befores: Vec<FilterResult> = serde_json::from_str(&before_contents)
         .with_context(|| format!("Failed to parse JSON: {}", before_path.display()))?;
 
     let after_path = resolve_path(args.after.clone(), &root);
-    let after_contents =
-        read_to_string(&after_path).with_context(|| format!("Faild to read {after_path:?}"))?;
+    let after_contents = read_to_string(&after_path)
+        .with_context(|| format!("Faild to read {}", after_path.display()))?;
     let afters: Vec<FilterResult> = serde_json::from_str(&after_contents)
         .with_context(|| format!("Failed to parse JSON: {}", after_path.display()))?;
 
@@ -140,12 +140,12 @@ fn write_table(
     let before_path = path_info
         .before
         .file_name()
-        .with_context(|| format!("Failed to get file_name of {:?}", path_info.before))?
+        .with_context(|| format!("Failed to get file_name of {}", path_info.before.display()))?
         .to_string_lossy();
     let after_path = path_info
         .after
         .file_name()
-        .with_context(|| format!("Failed to get file_name of {:?}", path_info.after))?
+        .with_context(|| format!("Failed to get file_name of {}", path_info.after.display()))?
         .to_string_lossy();
     let title = format!("{title_base} (before: {before_path}, after: {after_path})");
     writeln!(out, "## {title}")?;
