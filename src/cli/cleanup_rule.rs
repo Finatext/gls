@@ -35,14 +35,14 @@ pub fn cleanup_rule(args: CleanupRuleArgs) -> CliResult {
         .with_context(|| {
             format!(
                 "Failed to get .rules key in TOML document: {:?}",
-                args.source
+                args.source.display()
             )
         })?
         .as_array_of_tables_mut()
         .with_context(|| {
             format!(
                 "Failed to get `.rules` entries in TOML document: {:?}",
-                args.source
+                args.source.display()
             )
         })?;
     // Ensure each rule is assigned an ID before proceeding.
@@ -51,14 +51,14 @@ pub fn cleanup_rule(args: CleanupRuleArgs) -> CliResult {
             .with_context(|| {
                 format!(
                     "Failed to get `id` entry in `rules` array in TOML document: {:?}",
-                    args.source
+                    args.source.display()
                 )
             })?
             .as_str()
             .with_context(|| {
                 format!(
                     "Failed to get `.id` entry in TOML document: {:?}",
-                    args.source
+                    args.source.display()
                 )
             })?;
     }
