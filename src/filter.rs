@@ -81,41 +81,42 @@ fn apply_allowlist(allowlist: &Allowlist, finding: &Finding) -> bool {
         return false;
     }
 
-    if let Some(paths) = &allowlist.paths {
-        if !paths.is_empty() && paths.iter().any(|path| path.regex.is_match(&finding.file)) {
-            return true;
-        }
+    if let Some(paths) = &allowlist.paths
+        && !paths.is_empty()
+        && paths.iter().any(|path| path.regex.is_match(&finding.file))
+    {
+        return true;
     }
 
-    if let Some(commits) = &allowlist.commits {
-        if !commits.is_empty() && commits.contains(&finding.rule_id) {
-            return true;
-        }
+    if let Some(commits) = &allowlist.commits
+        && !commits.is_empty()
+        && commits.contains(&finding.rule_id)
+    {
+        return true;
     }
 
-    if let Some(stop_words) = &allowlist.stopwords {
-        if !stop_words.is_empty()
-            && stop_words
-                .iter()
-                .any(|word| finding.secret.to_lowercase().contains(word))
-        {
-            return true;
-        }
+    if let Some(stop_words) = &allowlist.stopwords
+        && !stop_words.is_empty()
+        && stop_words
+            .iter()
+            .any(|word| finding.secret.to_lowercase().contains(word))
+    {
+        return true;
     }
 
-    if let Some(regexes) = &allowlist.regexes {
-        if !regexes.is_empty() {
-            let target = allowlist
-                .regex_target
-                .as_ref()
-                .map_or(&finding.secret, |regex_target| match regex_target {
-                    RegexTarget::Line => &finding.line,
-                    RegexTarget::Match => &finding.matched,
-                    RegexTarget::Secret => &finding.secret,
-                });
-            if regexes.iter().any(|regex| regex.regex.is_match(target)) {
-                return true;
-            }
+    if let Some(regexes) = &allowlist.regexes
+        && !regexes.is_empty()
+    {
+        let target = allowlist
+            .regex_target
+            .as_ref()
+            .map_or(&finding.secret, |regex_target| match regex_target {
+                RegexTarget::Line => &finding.line,
+                RegexTarget::Match => &finding.matched,
+                RegexTarget::Secret => &finding.secret,
+            });
+        if regexes.iter().any(|regex| regex.regex.is_match(target)) {
+            return true;
         }
     }
 
