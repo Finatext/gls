@@ -107,8 +107,8 @@ pub fn scan(args: ScanArgs) -> CliResult {
             Ok(())
         } else {
             bail!(
-                "Failed to scan in {:?}: {:?}\n{}",
-                source_path,
+                "Failed to scan in {}: {:?}\n{}",
+                source_path.display(),
                 command,
                 String::from_utf8(output.stderr)?,
             )
