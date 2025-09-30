@@ -5,10 +5,8 @@ use std::{
 };
 
 use anyhow::{Context, bail};
-use chrono::{DateTime, Utc};
 use clap::Args;
 use rayon::{ThreadPoolBuilder, prelude::*};
-use serde::{Deserialize, Serialize};
 use tempfile::tempdir;
 
 use crate::cli::{CliResult, SUCCESS, resolve_path, resolve_root};
@@ -34,13 +32,6 @@ pub struct ScanArgs {
     /// Number of threads to use for parallel scanning.
     #[arg(long, env)]
     threads: Option<usize>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct Repo {
-    name: String,
-    pushed_at: DateTime<Utc>,
 }
 
 // read string from dev/jsonextra.json.tmpl
@@ -107,8 +98,8 @@ pub fn scan(args: ScanArgs) -> CliResult {
             Ok(())
         } else {
             bail!(
-                "Failed to scan in {:?}: {:?}\n{}",
-                source_path,
+                "Failed to scan in {}: {:?}\n{}",
+                source_path.display(),
                 command,
                 String::from_utf8(output.stderr)?,
             )

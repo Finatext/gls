@@ -134,7 +134,7 @@ impl FromStr for RegexTarget {
             "secret" => Ok(Self::Secret),
             "match" => Ok(Self::Match),
             "line" => Ok(Self::Line),
-            _ => bail!("Invalid regex target: {}", s),
+            _ => bail!("Invalid regex target: {s}"),
         }
     }
 }

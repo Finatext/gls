@@ -52,9 +52,7 @@ pub fn check_gitleaks() -> Result<()> {
     let expected = Version::parse("8.21.3")?;
     if version < expected {
         bail!(
-            "gitleaks is too old. Please install latest gitleaks. See .github/workflows/cicd.yml to setup: detected={}, expected={}",
-            version,
-            expected
+            "gitleaks is too old. Please install latest gitleaks. See .github/workflows/cicd.yml to setup: detected={version}, expected={expected}",
         );
     }
     Ok(())
